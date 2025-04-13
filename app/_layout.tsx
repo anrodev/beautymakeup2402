@@ -31,6 +31,7 @@ export default function RootLayout() {
           headerTintColor: "#000000",
           headerTitleStyle: {
             fontWeight: "bold",
+            fontSize:18
           }
         }}
       >

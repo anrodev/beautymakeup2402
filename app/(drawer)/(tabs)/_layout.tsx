@@ -13,6 +13,7 @@ export default function TabLayout() {
         headerTintColor: "#000000",
         headerTitleStyle: {
           fontWeight: "bold",
+          fontSize:18
         },
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
