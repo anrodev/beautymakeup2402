@@ -3,7 +3,7 @@
     "name": "beautymakeup2402",
     "slug": "beautymakeup2402",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
