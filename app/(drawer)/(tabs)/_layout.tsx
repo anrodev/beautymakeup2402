@@ -1,9 +1,11 @@
-import { Tabs } from 'expo-router';
+import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { DrawerToggleButton } from '@react-navigation/drawer';
+import { DrawerToggleButton } from "@react-navigation/drawer";
+import { TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function TabLayout() {
-
+  const router = useRouter();
   return (
     <Tabs
       screenOptions={{
@@ -13,7 +15,7 @@ export default function TabLayout() {
         headerTintColor: "#000000",
         headerTitleStyle: {
           fontWeight: "bold",
-          fontSize:18
+          fontSize: 18,
         },
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
@@ -22,12 +24,17 @@ export default function TabLayout() {
           height: 60,
         },
         tabBarActiveTintColor: "#000000",
-        tabBarInactiveTintColor: "#7D7D7D", 
+        tabBarInactiveTintColor: "#7D7D7D",
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
         },
-        headerLeft: () => <DrawerToggleButton/>
+        headerLeft: () => <DrawerToggleButton />,
+        headerRight: () => (
+          <TouchableOpacity style={{marginLeft:10,marginRight:20}} onPress={() => router.push("/cart")}>
+            <Ionicons name="cart-outline" size={25} color="black" />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Tabs.Screen
@@ -45,7 +52,7 @@ export default function TabLayout() {
           title: "Tienda",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="cart-outline" size={size} color={color} />
-          )
+          ),
         }}
       />
       <Tabs.Screen

@@ -94,7 +94,7 @@ export default function DrawerLayout() {
         icon={({ color, size }) => (
           <Ionicons name="settings-outline" size={size} color="black" />
         )}
-        onPress={() => null}
+        onPress={() => router.push("/settings")}
       />
 
       <View

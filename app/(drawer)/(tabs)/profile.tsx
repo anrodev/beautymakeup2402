@@ -16,7 +16,7 @@ export default function ProfileScreen() {
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.optionContainer}>
+      <TouchableOpacity style={styles.optionContainer} onPress={()=>router.push("/settings")}>
         <View style={styles.optionLeft}>
           <Ionicons name="settings-outline" size={30} color="black" />
           <Text style={styles.optionText}>Ajustes</Text>
