@@ -29,12 +29,12 @@ const mockCategories = [
   {
     id: 2,
     name: "Cosmetica",
-    image: require("@/assets/images/categories/notfound.jpg"),
+    image: require("@/assets/images/categories/cosmetica.jpeg"),
   },
   {
     id: 3,
     name: "Juegos",
-    image: require("@/assets/images/categories/notfound.jpg"),
+    image: require("@/assets/images/categories/juegos.jpeg"),
   },
   {
     id: 4,
@@ -44,12 +44,12 @@ const mockCategories = [
   {
     id: 5,
     name: "Maquillaje",
-    image: require("@/assets/images/categories/notfound.jpg"),
+    image: require("@/assets/images/categories/maquillaje.jpeg"),
   },
   {
     id: 6,
     name: "Para regalo",
-    image: require("@/assets/images/categories/notfound.jpg"),
+    image: require("@/assets/images/categories/regalo.jpeg"),
   },
   {
     id: 7,
