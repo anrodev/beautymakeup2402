@@ -68,6 +68,14 @@ export default function RootLayout() {
             animation: "slide_from_right",
           }}
         />
+        <Stack.Screen
+          name="appearance"
+          options={{
+            headerShown: false,
+            presentation: "transparentModal",
+            animation: "slide_from_right",
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

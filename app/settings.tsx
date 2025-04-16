@@ -35,7 +35,7 @@ export default function SettingsScreen() {
       <ScrollView style={styles.container}>
         <TouchableOpacity
           style={styles.optionContainer}
-          onPress={() => router.push("/settings")}
+          onPress={() => router.push("/appearance")}
         >
           <View style={styles.optionLeft}>
             <Ionicons name="moon-outline" size={24} color="black" />
@@ -44,9 +44,8 @@ export default function SettingsScreen() {
           <Ionicons name="chevron-forward" size={24} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <View
           style={styles.optionContainer}
-          onPress={() => router.push("/settings")}
         >
           <View style={styles.optionLeft}>
             <MaterialIcons name="attach-money" size={24} color="black" />
@@ -57,7 +56,7 @@ export default function SettingsScreen() {
               <Text style={styles.optionSpan}>EUR</Text>
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </ScrollView>
     </Modal>
   );
