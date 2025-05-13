@@ -10,6 +10,8 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Product,{ProductProps} from "@/components/Product"
 
+import { fetchProducts } from "@/lib/api";
+
 export const mockProducts: ProductProps[] = [
   {
     id: 1,
@@ -53,8 +55,27 @@ export default function ShopScreen() {
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [rowColumn, setRowColumn] = useState(true);
 
+  const getProducts = async() =>{
+
+    try {
+
+      let fetchedProducts = await fetchProducts(10,1);
+
+      console.log(fetchedProducts);
+      
+    } catch (error) {
+      
+      if (error instanceof Error) {
+        console.log(error.message);
+      }
+    }
+
+    
+  }
+
   useEffect(() => {
     setProducts([...mockProducts]);
+    getProducts();
   }, []);
 
   return (

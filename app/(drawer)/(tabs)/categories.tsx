@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
+import { fetchCategories } from "@/lib/api";
 
 export interface category {
   id: number;
@@ -69,17 +70,33 @@ const mockCategories = [
 ];
 
 export default function CategoriesScreen() {
-
   const [categories, setCategories] = useState<category[]>([]);
 
   const router = useRouter();
 
+  const getCategories = async () => {
+    try {
+      let fetchedCategories = await fetchCategories(100, 1);
+
+      console.log(fetchedCategories);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     setCategories([...mockCategories]);
+
+    getCategories();
   }, []);
 
   const renderItem = ({ item }: { item: category }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => router.push("/(drawer)/(tabs)/shop")}>
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => router.push("/(drawer)/(tabs)/shop")}
+    >
       <View style={styles.imageWrapper}>
         <Image source={item.image} style={styles.image} resizeMode="cover" />
       </View>
@@ -111,43 +128,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9F9F9",
-    paddingTop: 20
+    paddingTop: 20,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 16,
-    marginBottom: 20
+    marginBottom: 20,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#000"
+    color: "#000",
   },
   row: {
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   itemContainer: {
-    width: "33.33%",   
+    width: "33.33%",
     padding: 8,
-    alignItems: "center"
+    alignItems: "center",
   },
   imageWrapper: {
     width: "100%",
-    aspectRatio: 1,       
+    aspectRatio: 1,
     borderRadius: 8,
-    overflow: "hidden"
+    overflow: "hidden",
   },
   image: {
     width: "100%",
-    height: "100%"
+    height: "100%",
   },
   label: {
     fontSize: 13,
     fontWeight: "600",
     color: "#000",
     textAlign: "center",
-    marginTop: 5
+    marginTop: 5,
   },
 });
