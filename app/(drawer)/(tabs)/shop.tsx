@@ -5,83 +5,68 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import Product,{ProductProps} from "@/components/Product"
+import Product from "@/components/Product";
 
 import { fetchProducts } from "@/lib/api";
 
-export const mockProducts: ProductProps[] = [
-  {
-    id: 1,
-    name: "Contorno de Ojos Serum Hyaluronic Acid",
-    description:"¡Descubre la magia de la hidratación y el rejuvenecimiento con nuestro Contorno de Ojos de Ácido Hialurónico en Roll-On!",
-    price: 2.95,
-    stock: 24,
-    image:
-      "https://beautymakeup2402.es/wp-content/uploads/2025/03/47664AE1-B9D2-42B2-8FB0-C5A3215874F7-1000x769.jpeg.webp",
-  },
-  {
-    id: 2,
-    name: "Primer para sombra de ojos",
-    description:"Consigue que tu sombra dure todo el dia con nuestro primer.",
-    price: 2.95,
-    stock: 24,
-    image:
-      "https://beautymakeup2402.es/wp-content/uploads/2025/03/61FA5F00-98D6-4DD5-B7FA-D4CE2D6BBA45-1000x769.jpeg.webp",
-  },
-  {
-    id: 3,
-    name: "Paleta de sombras stich and friends",
-    description:"La Paleta de Sombras Stitch and Friends es un producto inspirado en el encantador universo de Lilo & Stitch. Diseñada para los amantes del maquillaje y los fans de Disney",
-    price: 10.95,
-    stock: 6,
-    image:
-      "https://beautymakeup2402.es/wp-content/uploads/2025/03/1C93CF04-C76D-4905-AD56-58CF0D5144E3.jpeg",
-  },
-  {
-    id: 4,
-    name: "Caja de labiales Hello Kitty",
-    description:"La Caja de Labiales Hello Kitty es un producto encantador que combina estilo y funcionalidad, ideal para los amantes de esta icónica gatita",
-    price: 9.95,
-    stock: 8,
-    image:
-      "https://beautymakeup2402.es/wp-content/uploads/2025/03/0E753BD2-52C2-4B34-BDF3-36351F296922.jpg",
-  },
-];
+import { ProductType } from "@/types";
 
 export default function ShopScreen() {
-  const [products, setProducts] = useState<ProductProps[]>([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [rowColumn, setRowColumn] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const getProducts = async() =>{
+  const handleLoadMore = () => {
+    if (!isLoadingMore && page <= totalPages) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
+  const getProducts = async (currentPage: number) => {
     try {
+      setIsLoadingMore(true);
 
-      let fetchedProducts = await fetchProducts(10,1);
+      const { records } = await fetchProducts(10, currentPage);
 
-      console.log(fetchedProducts);
-      
+      setTotal(records.total);
+
+      setTotalPages(records.totalPages);
+
+      setProducts((prev) => [...prev, ...records.products]);
     } catch (error) {
-      
       if (error instanceof Error) {
         console.log(error.message);
       }
+    } finally {
+      setIsLoadingMore(false);
     }
+  };
 
-    
-  }
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+
+    return (
+      <View style={{ padding: 16 }}>
+        <ActivityIndicator size="large" color="#E14BA7" />
+      </View>
+    );
+  };
 
   useEffect(() => {
-    setProducts([...mockProducts]);
-    getProducts();
-  }, []);
+    getProducts(page);
+  }, [page]);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Productos ({products.length})</Text>
+        <Text style={styles.title}>Productos ({total})</Text>
         <TouchableOpacity onPress={() => setRowColumn(!rowColumn)}>
           {rowColumn ? (
             <MaterialCommunityIcons
@@ -98,7 +83,7 @@ export default function ShopScreen() {
       <FlatList
         key={rowColumn ? "one" : "two"}
         data={products}
-        renderItem={({item}) => <Product item={{...item}} row={rowColumn}/>}
+        renderItem={({ item }) => <Product item={item} row={rowColumn} />}
         keyExtractor={(item) => item.id.toString()}
         numColumns={rowColumn ? 1 : 2}
         columnWrapperStyle={rowColumn ? undefined : styles.row}
@@ -108,6 +93,16 @@ export default function ShopScreen() {
             : { paddingHorizontal: 8, paddingBottom: 20 }
         }
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={
+          !isLoadingMore ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No se encontraron productos</Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -133,5 +128,15 @@ const styles = StyleSheet.create({
   },
   row: {
     justifyContent: "space-between",
-  }
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+  },
 });

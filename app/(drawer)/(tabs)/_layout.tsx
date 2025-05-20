@@ -1,11 +1,11 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
-import { TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import CartMenu from "@/components/CartMenu";
+
 
 export default function TabLayout() {
-  const router = useRouter();
+  
   return (
     <Tabs
       screenOptions={{
@@ -30,11 +30,7 @@ export default function TabLayout() {
           fontWeight: "600",
         },
         headerLeft: () => <DrawerToggleButton />,
-        headerRight: () => (
-          <TouchableOpacity style={{marginLeft:10,marginRight:20}} onPress={() => router.push("/cart")}>
-            <Ionicons name="cart-outline" size={25} color="black" />
-          </TouchableOpacity>
-        ),
+        headerRight: () => <CartMenu/>
       }}
     >
       <Tabs.Screen

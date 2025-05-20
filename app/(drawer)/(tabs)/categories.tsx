@@ -4,121 +4,91 @@ import {
   View,
   Text,
   FlatList,
-  Image,
-  TouchableOpacity,
   StyleSheet,
-  ImageSourcePropType,
+  ActivityIndicator,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-
-import { useRouter } from "expo-router";
 import { fetchCategories } from "@/lib/api";
-
-export interface category {
-  id: number;
-  name: string;
-  image: ImageSourcePropType;
-}
-
-const mockCategories = [
-  {
-    id: 1,
-    name: "Beauty box",
-    image: require("@/assets/images/categories/beautybox.jpeg"),
-  },
-  {
-    id: 2,
-    name: "Cosmetica",
-    image: require("@/assets/images/categories/cosmetica.jpeg"),
-  },
-  {
-    id: 3,
-    name: "Juegos",
-    image: require("@/assets/images/categories/juegos.jpeg"),
-  },
-  {
-    id: 4,
-    name: "Kawaii",
-    image: require("@/assets/images/categories/kawaii.jpeg"),
-  },
-  {
-    id: 5,
-    name: "Maquillaje",
-    image: require("@/assets/images/categories/maquillaje.jpeg"),
-  },
-  {
-    id: 6,
-    name: "Para regalo",
-    image: require("@/assets/images/categories/regalo.jpeg"),
-  },
-  {
-    id: 7,
-    name: "Perfumes y Ambientadores",
-    image: require("@/assets/images/categories/perfumes.jpeg"),
-  },
-  {
-    id: 8,
-    name: "Productos personalizados",
-    image: require("@/assets/images/categories/personalizados.jpeg"),
-  },
-  {
-    id: 9,
-    name: "Sin categoría",
-    image: require("@/assets/images/categories/notfound.jpg"),
-  },
-];
+import { CategoryType } from "@/types";
+import Category from "@/components/Category"
 
 export default function CategoriesScreen() {
-  const [categories, setCategories] = useState<category[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const router = useRouter();
 
-  const getCategories = async () => {
+  const handleLoadMore = () => {
+    if (!isLoadingMore && page <= totalPages) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const getCategories = async (currentPage: number) => {
     try {
-      let fetchedCategories = await fetchCategories(100, 1);
 
-      console.log(fetchedCategories);
+      setIsLoadingMore(true);
+
+      const { records } = await fetchCategories(100, currentPage);
+
+      setTotal(records.total);
+
+      setTotalPages(records.totalPages);
+
+      setCategories((prev) => [...prev, ...records.categories]);
+
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
       }
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
-  useEffect(() => {
-    setCategories([...mockCategories]);
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
 
-    getCategories();
-  }, []);
-
-  const renderItem = ({ item }: { item: category }) => (
-    <TouchableOpacity
-      style={styles.itemContainer}
-      onPress={() => router.push("/(drawer)/(tabs)/shop")}
-    >
-      <View style={styles.imageWrapper}>
-        <Image source={item.image} style={styles.image} resizeMode="cover" />
+    return (
+      <View style={{ padding: 16 }}>
+        <ActivityIndicator size="large" color="#E14BA7" />
       </View>
-      <Text style={styles.label}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  useEffect(() => {
+    getCategories(page);
+  }, [page]);
+
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Categorías de productos</Text>
+        <Text style={styles.title}>Categorías de productos ({total})</Text>
         <Ionicons name="chevron-forward" size={20} color="#000" />
       </View>
 
       <FlatList
         data={categories}
-        renderItem={renderItem}
+        renderItem={({ item }) => <Category item={item}/>}
         keyExtractor={(item) => item.id.toString()}
         numColumns={3}
         columnWrapperStyle={styles.row}
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={
+          !isLoadingMore ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No se encontraron categorías</Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );
@@ -145,26 +115,14 @@ const styles = StyleSheet.create({
   row: {
     justifyContent: "space-between",
   },
-  itemContainer: {
-    width: "33.33%",
-    padding: 8,
+  emptyContainer: {
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
   },
-  imageWrapper: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#000",
-    textAlign: "center",
-    marginTop: 5,
-  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+  }
 });

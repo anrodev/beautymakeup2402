@@ -2,21 +2,14 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 
 import { useRouter } from "expo-router";
 
-export interface ProductProps {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  image: string;
-}
+import { ProductType } from "@/types";
 
-interface ProductComponentProps {
-  item: ProductProps;
+export type ProductComponentProps = {
+  item: ProductType;
   row: boolean;
-}
+};
 
-export default function Product({ item, row }: ProductComponentProps) {
+const Product = ({ item, row }: ProductComponentProps) => {
   const router = useRouter();
   return (
     <>
@@ -26,18 +19,34 @@ export default function Product({ item, row }: ProductComponentProps) {
           onPress={() =>
             router.push({
               pathname: "/productDetail",
-              params: { ...item },
+              params: {
+                ...item,
+                id: item.id.toString(),
+                price: item.price.toString(),
+                stock_quantity: item.stock_quantity.toString(),
+                images: JSON.stringify(item.images),
+              },
             })
           }
         >
           <View style={stylesTwoItem.imageWrapper}>
-            <Image
-              source={{ uri: item.image }}
-              style={stylesTwoItem.image}
-              resizeMode="cover"
-            />
+            {item.images.length > 0 ? (
+              <Image
+                source={{ uri: item.images[0].src }}
+                style={stylesTwoItem.image}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={require("@/assets/images/categories/notfound.jpg")}
+                style={stylesTwoItem.image}
+                resizeMode="cover"
+              />
+            )}
             <View style={stylesTwoItem.stockBadge}>
-              <Text style={stylesTwoItem.stockText}>{item.stock} en stock</Text>
+              <Text style={stylesTwoItem.stockText}>
+                {item.stock_quantity} en stock
+              </Text>
             </View>
           </View>
           <Text style={stylesTwoItem.name}>{item.name}</Text>
@@ -49,26 +58,42 @@ export default function Product({ item, row }: ProductComponentProps) {
           onPress={() =>
             router.push({
               pathname: "/productDetail",
-              params: { ...item },
+              params: {
+                ...item,
+                id: item.id.toString(),
+                price: item.price.toString(),
+                stock_quantity: item.stock_quantity.toString(),
+                images: JSON.stringify(item.images),
+              },
             })
           }
         >
-          <Image
-            source={{ uri: item.image }}
-            style={stylesOneItem.image}
-            resizeMode="cover"
-          />
+          {item.images.length > 0 ? (
+            <Image
+              source={{ uri: item.images[0].src }}
+              style={stylesOneItem.image}
+              resizeMode="cover"
+            />
+          ) : (
+            <Image
+              source={require("@/assets/images/categories/notfound.jpg")}
+              style={stylesOneItem.image}
+              resizeMode="cover"
+            />
+          )}
 
           <View style={stylesOneItem.infoContainer}>
             <Text style={stylesOneItem.name}>{item.name}</Text>
             <Text style={stylesOneItem.price}>{item.price} €</Text>
-            <Text style={stylesOneItem.stock}>{item.stock} en stock</Text>
+            <Text style={stylesOneItem.stock}>
+              {item.stock_quantity} en stock
+            </Text>
           </View>
         </TouchableOpacity>
       )}
     </>
   );
-}
+};
 
 const stylesTwoItem = StyleSheet.create({
   card: {
@@ -164,3 +189,5 @@ const stylesOneItem = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default Product;
