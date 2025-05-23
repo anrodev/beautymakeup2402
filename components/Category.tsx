@@ -7,7 +7,14 @@ const Category = ({ item }: { item: CategoryType }) => {
   return (
     <TouchableOpacity
       style={styles.itemContainer}
-      onPress={() => router.push("/(drawer)/(tabs)/shop")}
+      onPress={() =>
+        router.push({
+          pathname: "/(drawer)/(tabs)/shop",
+          params: {
+            category:item.id.toString()
+          },
+        })
+      }
     >
       <View style={styles.imageWrapper}>
         {item.image?.src ? (
@@ -51,7 +58,7 @@ const styles = StyleSheet.create({
     color: "#000",
     textAlign: "center",
     marginTop: 5,
-  }
+  },
 });
 
 export default Category;

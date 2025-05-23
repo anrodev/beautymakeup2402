@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   row: {
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   emptyContainer: {
     flex: 1,

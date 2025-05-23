@@ -2,17 +2,20 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfileScreen() {
 
   const router = useRouter();
+
+  const { user } = useAuth();
 
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.optionContainer}  onPress={()=>router.push("/login")}>
         <View style={{...styles.optionLeft,paddingTop:20, paddingBottom:20}}>
           <Ionicons name="person-circle" size={46} color="#CFCFCF" />
-          <Text style={{...styles.optionText, fontSize:22, fontWeight:"bold"}}>Invitado</Text>
+          <Text style={{...styles.optionText, fontSize:22, fontWeight:"bold"}}>{user ? user.nicename : 'Invitado'}</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>

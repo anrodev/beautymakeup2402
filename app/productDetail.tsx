@@ -15,7 +15,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Product from "@/components/Product";
 import { ProductType } from "@/types";
 import { useCart } from "@/context/CartContext";
-import CartMenu from "@/components/CartMenu";
+import HeaderActions from "@/components/HeaderActions";
 import Toast from "react-native-toast-message";
 
 export default function ProductDetailScreen() {
@@ -29,60 +29,7 @@ export default function ProductDetailScreen() {
 
   const { addToCart } = useCart();
 
-  const mockProducts: ProductType[] = [
-    {
-      id: 1,
-      name: "Contorno de Ojos Serum Hyaluronic Acid",
-      description:
-        "¡Descubre la magia de la hidratación y el rejuvenecimiento con nuestro Contorno de Ojos de Ácido Hialurónico en Roll-On!",
-      price: 2.95,
-      stock_quantity: 24,
-      images: [
-        {
-          src: "https://beautymakeup2402.es/wp-content/uploads/2025/03/47664AE1-B9D2-42B2-8FB0-C5A3215874F7-1000x769.jpeg.webp",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Primer para sombra de ojos",
-      description:
-        "Consigue que tu sombra dure todo el dia con nuestro primer.",
-      price: 2.95,
-      stock_quantity: 24,
-      images: [
-        {
-          src: "https://beautymakeup2402.es/wp-content/uploads/2025/03/61FA5F00-98D6-4DD5-B7FA-D4CE2D6BBA45-1000x769.jpeg.webp",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Paleta de sombras stich and friends",
-      description:
-        "La Paleta de Sombras Stitch and Friends es un producto inspirado en el encantador universo de Lilo & Stitch. Diseñada para los amantes del maquillaje y los fans de Disney",
-      price: 10.95,
-      stock_quantity: 6,
-      images: [
-        {
-          src: "https://beautymakeup2402.es/wp-content/uploads/2025/03/1C93CF04-C76D-4905-AD56-58CF0D5144E3.jpeg",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "Caja de labiales Hello Kitty",
-      description:
-        "La Caja de Labiales Hello Kitty es un producto encantador que combina estilo y funcionalidad, ideal para los amantes de esta icónica gatita",
-      price: 9.95,
-      stock_quantity: 8,
-      images: [
-        {
-          src: "https://beautymakeup2402.es/wp-content/uploads/2025/03/0E753BD2-52C2-4B34-BDF3-36351F296922.jpg",
-        },
-      ],
-    },
-  ];
+  const mockProducts: ProductType[] = [];
 
   const product = {
     id: Number(params.id),
@@ -95,7 +42,7 @@ export default function ProductDetailScreen() {
 
   const [products, setProducts] = useState<ProductType[]>([]);
 
-  const addProduct = async() => {
+  const addProduct = async () => {
     try {
       await addToCart({ ...product, amount: 1 });
 
@@ -103,10 +50,8 @@ export default function ProductDetailScreen() {
         type: "success",
         text1: "¡Éxito!",
         text2: `${product.name} agregado con éxito 👌`,
-        position: "bottom"
+        position: "bottom",
       });
-
-
     } catch (error) {
       console.error("Error al agregar el producto:", error);
 
@@ -114,7 +59,7 @@ export default function ProductDetailScreen() {
         type: "error",
         text1: "Error",
         text2: "Hubo un problema al agregar el producto 😓",
-        position: "bottom"
+        position: "bottom",
       });
     }
   };
@@ -133,7 +78,7 @@ export default function ProductDetailScreen() {
             color="black"
           />
         </TouchableOpacity>
-        <CartMenu />
+        <HeaderActions />
       </View>
 
       <FlatList
@@ -177,19 +122,15 @@ export default function ProductDetailScreen() {
             <Text style={styles.title}>{product.name}</Text>
             <Text style={styles.price}>{product.price} €</Text>
             <Text style={styles.stock}>{product.stock_quantity} en stock</Text>
-            <TouchableOpacity style={styles.button} onPress={addProduct}>
-              <Text style={styles.buttonText}>Añadir a la cesta</Text>
-            </TouchableOpacity>
+            {product.stock_quantity > 0 && (
+              <TouchableOpacity style={styles.button} onPress={addProduct}>
+                <Text style={styles.buttonText}>Añadir a la cesta</Text>
+              </TouchableOpacity>
+            )}
             <RenderHTML
               contentWidth={width}
               source={{ html: product.description }}
             />
-            <TouchableOpacity style={styles.optionContainer}>
-              <View style={styles.optionLeft}>
-                <Text style={styles.optionText}>Más vistos</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="black" />
-            </TouchableOpacity>
           </View>
         }
         renderItem={({ item }) => <Product item={item} row={true} />}

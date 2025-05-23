@@ -1,11 +1,9 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
-import CartMenu from "@/components/CartMenu";
-
+import HeaderActions from "@/components/HeaderActions";
 
 export default function TabLayout() {
-  
   return (
     <Tabs
       screenOptions={{
@@ -30,7 +28,7 @@ export default function TabLayout() {
           fontWeight: "600",
         },
         headerLeft: () => <DrawerToggleButton />,
-        headerRight: () => <CartMenu/>
+        headerRight: () => <HeaderActions />
       }}
     >
       <Tabs.Screen

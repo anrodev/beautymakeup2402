@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import Toast from "react-native-toast-message";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,8 +25,8 @@ export default function RootLayout() {
   }
 
   return (
-    <CartProvider>
-      <>
+    <AuthProvider>
+      <CartProvider>
         <Stack
           screenOptions={{
             headerStyle: {
@@ -64,6 +65,22 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="generateOrder"
+            options={{
+              headerShown: false,
+              presentation: "transparentModal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
+            name="checkout"
+            options={{
+              headerShown: false,
+              presentation: "transparentModal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
             name="settings"
             options={{
               headerShown: false,
@@ -83,7 +100,7 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
         <Toast />
-      </>
-    </CartProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }

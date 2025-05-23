@@ -43,11 +43,20 @@ const Product = ({ item, row }: ProductComponentProps) => {
                 resizeMode="cover"
               />
             )}
-            <View style={stylesTwoItem.stockBadge}>
-              <Text style={stylesTwoItem.stockText}>
-                {item.stock_quantity} en stock
-              </Text>
-            </View>
+
+            {item.stock_quantity > 0 ? (
+              <View style={stylesTwoItem.stockBadge}>
+                <Text style={stylesTwoItem.stockText}>
+                  {item.stock_quantity} en stock
+                </Text>
+              </View>
+            ) : (
+              <View style={stylesTwoItem.stockBadgeError}>
+                <Text style={stylesTwoItem.stockText}>
+                  sin en stock
+                </Text>
+              </View>
+            )}
           </View>
           <Text style={stylesTwoItem.name}>{item.name}</Text>
           <Text style={stylesTwoItem.price}>{item.price} €</Text>
@@ -85,9 +94,13 @@ const Product = ({ item, row }: ProductComponentProps) => {
           <View style={stylesOneItem.infoContainer}>
             <Text style={stylesOneItem.name}>{item.name}</Text>
             <Text style={stylesOneItem.price}>{item.price} €</Text>
-            <Text style={stylesOneItem.stock}>
-              {item.stock_quantity} en stock
-            </Text>
+            {item.stock_quantity > 0 ? (
+              <Text style={stylesOneItem.stock}>
+                {item.stock_quantity} en stock
+              </Text>
+            ) : (
+              <Text style={stylesOneItem.stockError}>sin stock</Text>
+            )}
           </View>
         </TouchableOpacity>
       )}
@@ -122,6 +135,15 @@ const stylesTwoItem = StyleSheet.create({
     top: 8,
     right: 8,
     backgroundColor: "#4CAF50",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  stockBadgeError: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#d92b10",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -186,6 +208,11 @@ const stylesOneItem = StyleSheet.create({
   stock: {
     fontSize: 13,
     color: "#4CAF50",
+    fontWeight: "600",
+  },
+  stockError: {
+    fontSize: 13,
+    color: "#d92b10",
     fontWeight: "600",
   },
 });

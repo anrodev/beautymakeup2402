@@ -10,34 +10,49 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Linking } from "react-native";
 import { Share } from "react-native";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DrawerLayout() {
   const router = useRouter();
 
+  const { user, logout } = useAuth();
+
   const handleEmail = () => {
-    const email = 'john.doe@example.com'; 
+    const email = "info@beautymakeup2402.es";
     const url = `mailto:${email}`;
-    Linking.openURL(url).catch(err => console.error('Error al intentar abrir el correo:', err));
+    Linking.openURL(url).catch((err) =>
+      console.error("Error al intentar abrir el correo:", err)
+    );
   };
 
   const handleCall = () => {
-    const phoneNumber = 'tel:9876543210';
-    Linking.openURL(phoneNumber).catch(err => console.error('Error al intentar llamar:', err));
+    const phoneNumber = "tel:+34662539564";
+    Linking.openURL(phoneNumber).catch((err) =>
+      console.error("Error al intentar llamar:", err)
+    );
   };
 
-  
   const handleShare = async () => {
-    const url = 'https://beautymakeup2402.es';
+    const url = "https://beautymakeup2402.es";
 
     try {
       await Share.share({
         message: `Visita esta página: ${url}`,
-        url: url
+        url: url,
       });
     } catch (error) {
-      console.error('Error al intentar compartir:', error);
+      console.error("Error al intentar compartir:", error);
     }
   };
+
+  const handleLogout = () => {
+    
+    logout();
+
+    router.push("/(drawer)/(tabs)");
+
+  };
+
 
   const CustomDrawerContent = (props: DrawerContentComponentProps) => (
     <DrawerContentScrollView {...props}>
@@ -67,18 +82,6 @@ export default function DrawerLayout() {
           <Ionicons name="grid-outline" size={size} color="black" />
         )}
         onPress={() => router.push("/(drawer)/(tabs)/categories")}
-      />
-      <DrawerItem
-        label={"Acerca de"}
-        labelStyle={{ color: "black" }}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="information-circle-outline"
-            size={size}
-            color="black"
-          />
-        )}
-        onPress={() => null}
       />
       <DrawerItem
         label={"Perfil"}
@@ -131,6 +134,17 @@ export default function DrawerLayout() {
         )}
         onPress={handleShare}
       />
+
+      {user && (
+        <DrawerItem
+          label={"Salir"}
+          labelStyle={{ color: "black" }}
+          icon={({ color, size }) => (
+            <Ionicons name="exit-outline" size={size} color="black" />
+          )}
+          onPress={handleLogout}
+        />
+      )}
     </DrawerContentScrollView>
   );
 

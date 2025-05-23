@@ -1,4 +1,4 @@
-import { API_URL, getAuthHeader } from "../config";
+import { API_URL, getWooAuthHeader } from "../config";
 import { ApiErrorType, CategoryType } from "@/types";
 
 
@@ -11,7 +11,7 @@ export const fetchCategories = async (
     `${API_URL}/wp-json/wc/v3/products/categories?per_page=${perPage}&page=${page}&parent=0&order=${order}`,
     {
       headers: {
-        Authorization: getAuthHeader(),
+        Authorization: getWooAuthHeader()
       },
     }
   );

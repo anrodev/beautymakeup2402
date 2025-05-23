@@ -15,6 +15,11 @@ import { fetchProducts } from "@/lib/api";
 
 import { ProductType } from "@/types";
 
+import { useLocalSearchParams } from "expo-router";
+
+import { useRouter } from "expo-router";
+
+
 export default function ShopScreen() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [rowColumn, setRowColumn] = useState(true);
@@ -23,8 +28,16 @@ export default function ShopScreen() {
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const category =
+    params?.category != null && !isNaN(Number(params.category))
+      ? Number(params.category)
+      : null;
+
   const handleLoadMore = () => {
-    if (!isLoadingMore && page <= totalPages) {
+    if (!isLoadingMore && page < totalPages) {
       setPage((prev) => prev + 1);
     }
   };
@@ -33,7 +46,7 @@ export default function ShopScreen() {
     try {
       setIsLoadingMore(true);
 
-      const { records } = await fetchProducts(10, currentPage);
+      const { records } = await fetchProducts(10, currentPage, category && category>0?category:null);
 
       setTotal(records.total);
 
@@ -59,14 +72,51 @@ export default function ShopScreen() {
     );
   };
 
+  const reset = () => {
+    setTotal(0);
+    setTotalPages(0);
+    setProducts([]);
+    if(page!=1){
+      setPage(1);
+    }else{
+      getProducts(1);
+    }
+    
+  };
+
   useEffect(() => {
     getProducts(page);
   }, [page]);
 
+  useEffect(() => {
+    if (category) {
+      reset();
+    }
+  }, [category]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Productos ({total})</Text>
+        <View>
+          <Text style={styles.title}>Productos ({total})</Text>
+
+          {!isLoadingMore && category !== null && category>0 && (
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/(drawer)/(tabs)/shop",
+                  params: {
+                    category: -1
+                  },
+                })
+              }
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>Ver todos</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <TouchableOpacity onPress={() => setRowColumn(!rowColumn)}>
           {rowColumn ? (
             <MaterialCommunityIcons
@@ -126,6 +176,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
   },
+  link: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#000",
+  },
   row: {
     justifyContent: "space-between",
   },
@@ -138,5 +193,19 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#666",
+  },
+  clearButton: {
+    backgroundColor: "#E14BA7",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+    marginTop: 6,
+  },
+
+  clearButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });

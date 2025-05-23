@@ -17,11 +17,15 @@ import {
 import { useRouter } from "expo-router";
 import EmptyMessage from "@/components/EmptyMessage";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CartScreen() {
   const modalRef = useRef<ModalRef>(null);
   const router = useRouter();
-  const { cart, totalPrice, sumAmount, discountAmount, deleteProduct } = useCart();
+  const { cart, totalPrice, sumAmount, discountAmount, deleteProduct } =
+    useCart();
+
+  const { user} = useAuth();
 
   return (
     <Modal ref={modalRef} color="#FADDE0">
@@ -39,10 +43,11 @@ export default function CartScreen() {
         </View>
 
         <TouchableOpacity
-          style={{ marginLeft: 10, marginRight: 20 }}
-          onPress={() => router.push("/login")}
+          style={{ flexDirection: "row", alignItems: "center" }}
+          onPress={() => (!user ? router.push("/login") : null)}
         >
           <Ionicons name="person-outline" size={22} color="black" />
+          <Text style={{ marginLeft: 5, fontWeight:"bold" }}>{user?.nicename}</Text>
         </TouchableOpacity>
       </View>
 
@@ -112,7 +117,10 @@ export default function CartScreen() {
             </View>
           </ScrollView>
 
-          <TouchableOpacity style={styles.checkoutButton}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={() => router.push("/generateOrder")}
+          >
             <Text style={styles.checkoutText}>Comprar</Text>
           </TouchableOpacity>
         </View>
@@ -122,7 +130,6 @@ export default function CartScreen() {
     </Modal>
   );
 }
-
 
 const styles = StyleSheet.create({
   header: {
