@@ -4,12 +4,21 @@ import { useRouter } from "expo-router";
 
 import { ProductType } from "@/types";
 
+import { decode } from "html-entities";
+
 export type ProductComponentProps = {
   item: ProductType;
   row: boolean;
 };
 
 const Product = ({ item, row }: ProductComponentProps) => {
+
+
+  const cleanPriceHtml = (html: string): string => {
+    const withoutTags = html.replace(/<\/?[^>]+(>|$)/g, "");
+    return decode(withoutTags.trim());
+  };
+
   const router = useRouter();
   return (
     <>
@@ -52,14 +61,12 @@ const Product = ({ item, row }: ProductComponentProps) => {
               </View>
             ) : (
               <View style={stylesTwoItem.stockBadgeError}>
-                <Text style={stylesTwoItem.stockText}>
-                  sin en stock
-                </Text>
+                <Text style={stylesTwoItem.stockText}>sin en stock</Text>
               </View>
             )}
           </View>
           <Text style={stylesTwoItem.name}>{item.name}</Text>
-          <Text style={stylesTwoItem.price}>{item.price} €</Text>
+          <Text style={stylesTwoItem.price}>{cleanPriceHtml(item.price_html)}</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
@@ -93,7 +100,7 @@ const Product = ({ item, row }: ProductComponentProps) => {
 
           <View style={stylesOneItem.infoContainer}>
             <Text style={stylesOneItem.name}>{item.name}</Text>
-            <Text style={stylesOneItem.price}>{item.price} €</Text>
+            <Text style={stylesOneItem.price}>{cleanPriceHtml(item.price_html)}</Text>
             {item.stock_quantity > 0 ? (
               <Text style={stylesOneItem.stock}>
                 {item.stock_quantity} en stock
