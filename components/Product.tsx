@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 
 import { ProductType } from "@/types";
 
-import { decode } from "html-entities";
+import cleanHtml from "@/lib/utils/cleanHtml";
 
 export type ProductComponentProps = {
   item: ProductType;
@@ -13,11 +13,6 @@ export type ProductComponentProps = {
 
 const Product = ({ item, row }: ProductComponentProps) => {
 
-
-  const cleanPriceHtml = (html: string): string => {
-    const withoutTags = html.replace(/<\/?[^>]+(>|$)/g, "");
-    return decode(withoutTags.trim());
-  };
 
   const router = useRouter();
   return (
@@ -32,8 +27,10 @@ const Product = ({ item, row }: ProductComponentProps) => {
                 ...item,
                 id: item.id.toString(),
                 price: item.price.toString(),
+                price_html: cleanHtml(item.price_html),
                 stock_quantity: item.stock_quantity.toString(),
                 images: JSON.stringify(item.images),
+                attributes: JSON.stringify(item.attributes)
               },
             })
           }
@@ -66,7 +63,7 @@ const Product = ({ item, row }: ProductComponentProps) => {
             )}
           </View>
           <Text style={stylesTwoItem.name}>{item.name}</Text>
-          <Text style={stylesTwoItem.price}>{cleanPriceHtml(item.price_html)}</Text>
+          <Text style={stylesTwoItem.price}>{cleanHtml(item.price_html)}</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
@@ -78,8 +75,10 @@ const Product = ({ item, row }: ProductComponentProps) => {
                 ...item,
                 id: item.id.toString(),
                 price: item.price.toString(),
+                price_html: cleanHtml(item.price_html),
                 stock_quantity: item.stock_quantity.toString(),
                 images: JSON.stringify(item.images),
+                attributes: JSON.stringify(item.attributes)
               },
             })
           }
@@ -100,7 +99,7 @@ const Product = ({ item, row }: ProductComponentProps) => {
 
           <View style={stylesOneItem.infoContainer}>
             <Text style={stylesOneItem.name}>{item.name}</Text>
-            <Text style={stylesOneItem.price}>{cleanPriceHtml(item.price_html)}</Text>
+            <Text style={stylesOneItem.price}>{cleanHtml(item.price_html)}</Text>
             {item.stock_quantity > 0 ? (
               <Text style={stylesOneItem.stock}>
                 {item.stock_quantity} en stock

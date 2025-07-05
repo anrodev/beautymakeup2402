@@ -13,10 +13,18 @@ import Modal, { ModalRef } from "@/components/Modal";
 import { useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Product from "@/components/Product";
-import { ProductType } from "@/types";
+import { ProductType, ProductVariationType } from "@/types";
 import { useCart } from "@/context/CartContext";
 import HeaderActions from "@/components/HeaderActions";
 import Toast from "react-native-toast-message";
+import ProductVariation from "@/components/ProductVariation";
+import LoadingOverlay from "@/components/LoadingOverlay";
+import { fetchProductVariations } from "@/lib/api";
+
+type AttributeType = {
+  name: string;
+  option: string | null;
+};
 
 export default function ProductDetailScreen() {
   const { width } = useWindowDimensions();
@@ -27,20 +35,99 @@ export default function ProductDetailScreen() {
 
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const [selectedAttributes, setSelectedAttributes] = useState<AttributeType[]>(
+    []
+  );
+
+  const [productVariations, setProductVariations] = useState<
+    ProductVariationType[]
+  >([]);
+
   const { addToCart } = useCart();
 
-  const mockProducts: ProductType[] = [];
-
-  const product = {
+  const [product, setProduct] = useState<ProductType>({
     id: Number(params.id),
-    images: params.images ? JSON.parse(params.images as string) : [],
     name: params.name as string,
     description: params.description as string,
+    type: params.type as string,
     price: Number(params.price),
+    regular_price: Number(params.regular_price),
+    sale_price: Number(params.sale_price),
+    price_html: params.price_html as string,
     stock_quantity: Number(params.stock_quantity),
-  };
+    images: params.images ? JSON.parse(params.images as string) : [],
+    attributes: params.attributes
+      ? JSON.parse(params.attributes as string)
+      : [],
+  });
 
   const [products, setProducts] = useState<ProductType[]>([]);
+
+  const [loading, setLoading] = useState(false);
+
+  const changeAttribute = (name: string, option: string | null) => {
+  
+    const index = selectedAttributes.findIndex((attr) => attr.name == name);
+
+    if (index !== -1) {
+      if (option) {
+        setSelectedAttributes((prev) => {
+          const attributes = [...prev];
+          attributes[index] = { ...attributes[index], option };
+          return attributes;
+        });
+      } else {
+        setSelectedAttributes((prev) =>
+          prev.filter((attr) => attr.name != name)
+        );
+      }
+    } else {
+      if (option) {
+        setSelectedAttributes((prev) => [...prev, { name, option }]);
+      }
+    }
+  };
+
+  const getVariant = () => {
+    const productVariation = productVariations.find((vrt) =>
+      selectedAttributes.every((sattr) =>
+        vrt.attributes.some(
+          (attr) => attr.name === sattr.name && attr.option === sattr.option
+        )
+      )
+    );
+
+    if (productVariation) {
+
+      setProduct((prev) => ({
+        ...prev,
+        id:  Number(productVariation.id),
+        price: Number(productVariation.price),
+        images: [productVariation.image],
+        stock_quantity: productVariation.stock_quantity,
+      }));
+
+    }
+  };
+
+  const getProductVariations = async (id: number) => {
+    try {
+      
+      setLoading(true);
+
+      const variations = await fetchProductVariations(id);
+
+      setProductVariations(variations);
+
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addProduct = async () => {
     try {
@@ -65,8 +152,14 @@ export default function ProductDetailScreen() {
   };
 
   useEffect(() => {
-    setProducts([...mockProducts]);
+    if (product && product.type == "variable") {
+      getProductVariations(product.id);
+    }
   }, []);
+
+  useEffect(() => {
+    getVariant();
+  }, [selectedAttributes]);
 
   return (
     <Modal ref={modalRef}>
@@ -120,13 +213,35 @@ export default function ProductDetailScreen() {
               ))}
             </View>
             <Text style={styles.title}>{product.name}</Text>
-            <Text style={styles.price}>{product.price} €</Text>
-            <Text style={styles.stock}>{product.stock_quantity} en stock</Text>
-            {product.stock_quantity > 0 && (
-              <TouchableOpacity style={styles.button} onPress={addProduct}>
-                <Text style={styles.buttonText}>Añadir a la cesta</Text>
-              </TouchableOpacity>
-            )}
+            <Text style={styles.price}>{product.price_html}</Text>
+            <Text
+              style={{
+                ...styles.stock,
+                color: product.stock_quantity > 0 ? "green" : "red",
+              }}
+            >
+              {product.stock_quantity > 0
+                ? `${product.stock_quantity} en stock`
+                : "Sin stock"}
+            </Text>
+
+            {(product.type=="variable" && productVariations.length>0)&&<View>
+              {product.attributes.map((attr, i: number) => (
+                <ProductVariation
+                  key={i}
+                  name={attr.name}
+                  options={attr.options}
+                  setOptionSelected={(option) =>
+                    changeAttribute(attr.name, option)
+                  }
+                />
+              ))}
+
+              <Text style={{ ...styles.title, marginTop: 10 }}>
+                {product.price} IVA inc.
+              </Text>
+            </View>}
+
             <RenderHTML
               contentWidth={width}
               source={{ html: product.description }}
@@ -139,6 +254,16 @@ export default function ProductDetailScreen() {
         numColumns={1}
         showsVerticalScrollIndicator={false}
       />
+
+      {product.stock_quantity > 0 && (
+        <View style={{ margin: 20 }}>
+          <TouchableOpacity style={styles.button} onPress={addProduct}>
+            <Text style={styles.buttonText}>Añadir a la cesta</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <LoadingOverlay visible={loading} />
     </Modal>
   );
 }
@@ -193,16 +318,16 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   stock: {
-    fontSize: 14,
-    color: "green",
+    fontSize: 17,
+    fontWeight: "bold",
     marginBottom: 20,
   },
+
   button: {
     backgroundColor: "#F1A3A3",
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",
-    marginBottom: 20,
   },
   buttonText: {
     color: "black",

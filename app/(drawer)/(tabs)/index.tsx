@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { fetchProductById } from "@/lib/api";
 import { ProductType } from "@/types";
+import cleanHtml from "@/lib/utils/cleanHtml";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -73,8 +74,10 @@ export default function HomeScreen() {
                   ...productTiktok,
                   id: productTiktok.id.toString(),
                   price: productTiktok.price.toString(),
+                  price_html: cleanHtml(productTiktok.price_html),
                   stock_quantity: productTiktok.stock_quantity.toString(),
                   images: JSON.stringify(productTiktok.images),
+                  attributes: JSON.stringify(productTiktok.attributes)
                 },
               })
             }

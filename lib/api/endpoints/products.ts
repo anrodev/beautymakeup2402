@@ -1,6 +1,6 @@
 import { API_URL, getWooAuthHeader } from "../config";
 
-import { ApiErrorType, ProductType } from "../../../types";
+import { ApiErrorType, ProductType, ProductVariationType } from "../../../types";
 
 export const fetchProducts = async (
   perPage: number,
@@ -71,3 +71,22 @@ export const fetchProductById = async (id: number) => {
 
   return product;
 };
+
+
+export const fetchProductVariations = async (id:number) =>{
+
+  const res = await fetch(`${API_URL}/wp-json/wc/v3/products/${id}/variations`, {
+    headers: {
+      Authorization: getWooAuthHeader(),
+    },
+  });
+
+  if (!res.ok) {
+    const error: ApiErrorType = await res.json();
+    throw new Error(error.message || "Unknown error");
+  }
+
+  const data: ProductVariationType[] = await res.json();
+
+  return data;
+}
