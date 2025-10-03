@@ -33,17 +33,6 @@ export default function SettingsScreen() {
         <Text style={styles.textHeader}>Ajustes</Text>
       </View>
       <ScrollView style={styles.container}>
-        <TouchableOpacity
-          style={styles.optionContainer}
-          onPress={() => router.push("/appearance")}
-        >
-          <View style={styles.optionLeft}>
-            <Ionicons name="moon-outline" size={24} color="black" />
-            <Text style={styles.optionText}>Apariencia</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="black" />
-        </TouchableOpacity>
-
         <View
           style={styles.optionContainer}
         >

@@ -5,33 +5,74 @@ import {
   Text,
   ActivityIndicator,
 } from "react-native";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Modal, { ModalRef } from "@/components/Modal";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
 
 import { WebView } from "react-native-webview";
 
 import { useLocalSearchParams } from "expo-router";
+import { fecthOrder } from "@/lib/api";
+import LoadingOverlay from "@/components/LoadingOverlay";
+import { useCart } from "@/context/CartContext";
 
 export default function CheckoutScreen() {
   const modalRef = useRef<ModalRef>(null);
+
   const router = useRouter();
 
   const params = useLocalSearchParams();
 
   const webviewRef = useRef(null);
 
+  const [orderStatus, setOrderStatus] = useState("processing");
+
+  const [loading, setLoading] = useState(false);
+
+  const { clearCart } = useCart();
+
+  const getOrder = async (orderId: number) => {
+    setLoading(true);
+
+    try {
+      const order = await fecthOrder(orderId);
+
+      const status = ["pending", "processing", "on-hold", "completed"].includes(
+        order.status
+      );
+
+      if (status) {
+        clearCart();
+        setOrderStatus("completed");
+      } else {
+        setOrderStatus("canceled");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNavigationChange = (navState: any) => {
     const { url } = navState;
 
     if (url.includes("order-received")) {
-      modalRef.current?.close();
-    }
 
-    if (url.includes("cancelled") || url.includes("failed")) {
-      modalRef.current?.close();
+      const orderId = Number(params.orderId as string);
+
+      getOrder(orderId);
+
+    } else if (
+      url.includes("cancel_order=true") ||
+      url.includes("cancelled") ||
+      url.includes("failed")
+    ) {
+      setOrderStatus("canceled");
     }
   };
 
@@ -39,41 +80,64 @@ export default function CheckoutScreen() {
     <Modal ref={modalRef} color="#FADDE0">
       <View style={styles.header}>
         <View style={styles.leftContainer}>
-          <TouchableOpacity onPress={() => modalRef.current?.close()}>
-            <MaterialCommunityIcons
-              name="keyboard-backspace"
-              size={24}
-              color="black"
-            />
-          </TouchableOpacity>
-
           <Text style={styles.textHeader}>Completa tu compra</Text>
         </View>
-
-        <TouchableOpacity
-          style={{ marginLeft: 10, marginRight: 20 }}
-          onPress={() => router.push("/login")}
-        >
-          <Ionicons name="person-outline" size={22} color="black" />
-        </TouchableOpacity>
       </View>
 
-      <View style={styles.container}>
-        <WebView
-          ref={webviewRef}
-          source={{
-            uri:
-              (Array.isArray(params.paymentUrl)
-                ? params.paymentUrl[0]
-                : params.paymentUrl) + "&hide-header=true",
-          }}
-          onNavigationStateChange={handleNavigationChange}
-          startInLoadingState
-          renderLoading={() => (
-            <ActivityIndicator size="large" style={{ flex: 1 }} />
-          )}
-        />
-      </View>
+      {orderStatus === "processing" && (
+        <View style={styles.container}>
+          <WebView
+            ref={webviewRef}
+            source={{
+              uri:
+                (Array.isArray(params.paymentUrl)
+                  ? params.paymentUrl[0]
+                  : params.paymentUrl) + "&hide-header=true",
+            }}
+            onNavigationStateChange={handleNavigationChange}
+            startInLoadingState
+            renderLoading={() => (
+              <ActivityIndicator size="large" style={{ flex: 1 }} />
+            )}
+          />
+        </View>
+      )}
+
+      {orderStatus === "canceled" && (
+        <View style={styles.messageContainer}>
+          <Feather name="alert-octagon" size={80} color="#ff7070ff" />
+          <Text style={{ ...styles.messageTitle, color: "#ff7070ff" }}>
+            Compra fallida
+          </Text>
+          <Text style={styles.messageSubtitle}>
+            La transacción no pudo completarse correctamente 😭
+          </Text>
+          <TouchableOpacity
+            style={{ ...styles.buttonNext, backgroundColor: "#ff7070ff" }}
+            onPress={() => router.replace("/(drawer)/(tabs)/shop")}
+          >
+            <Text style={{ color: "white", fontSize: 20 }}>Ok</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {orderStatus === "completed" && (
+        <View style={styles.messageContainer}>
+          <Feather name="check-circle" size={80} color="#8ad188ff" />
+          <Text style={{ ...styles.messageTitle, color: "#8ad188ff" }}>
+            Compra exitosa
+          </Text>
+          <Text style={styles.messageSubtitle}>Gracias por tu compra 🥳</Text>
+          <TouchableOpacity
+            style={{ ...styles.buttonNext, backgroundColor: "#8ad188ff" }}
+            onPress={() => router.replace("/(drawer)/(tabs)/shop")}
+          >
+            <Text style={{ color: "white", fontSize: 20 }}>Ok</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <LoadingOverlay visible={loading} />
     </Modal>
   );
 }
@@ -99,5 +163,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+  },
+
+  messageContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+  },
+
+  messageTitle: {
+    fontWeight: "bold",
+    fontSize: 28,
+    marginLeft: 16,
+  },
+  messageSubtitle: {
+    fontSize: 20,
+    color: "#adadadff",
+    marginLeft: 16,
+    textAlign: "center",
+  },
+  buttonNext: {
+    minWidth: 100,
+    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 16,
+    borderRadius: 12,
   },
 });

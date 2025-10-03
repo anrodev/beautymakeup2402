@@ -2,11 +2,13 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
 import HeaderActions from "@/components/HeaderActions";
+import { HapticTab } from '@/components/HapticTab';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+
         headerStyle: {
           backgroundColor: "#FADDE0",
         },
@@ -15,11 +17,11 @@ export default function TabLayout() {
           fontWeight: "bold",
           fontSize: 18,
         },
+        tabBarButton: HapticTab,
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 1,
           borderTopColor: "#E0E0E0",
-          height: 60,
         },
         tabBarActiveTintColor: "#000000",
         tabBarInactiveTintColor: "#7D7D7D",

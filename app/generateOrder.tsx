@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import Modal, { ModalRef } from "@/components/Modal";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCart } from "@/context/CartContext";
 import { useForm, Controller } from "react-hook-form";
@@ -35,7 +35,7 @@ export type OrderType = z.infer<typeof schema>;
 export default function GenerateOrderScreen() {
   const modalRef = useRef<ModalRef>(null);
   const router = useRouter();
-  const { cart } = useCart();
+  const { cart, coupons } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -87,14 +87,17 @@ export default function GenerateOrderScreen() {
     try {
       setLoading(true);
 
-      const paymentUrl = await fetchGenerateOrder(data, cart);
+      const code = (coupons.length>0)?coupons[0].code:null
+      
+      const order = await fetchGenerateOrder(data, cart, code);
+
+      console.log(order);
 
       router.push({
         pathname: "/checkout",
-        params: {
-          paymentUrl: paymentUrl,
-        },
+        params: {...order}
       });
+      
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);

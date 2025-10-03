@@ -6,7 +6,7 @@ import {
   Image,
   Text,
 } from "react-native";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Modal, { ModalRef } from "@/components/Modal";
 import {
   Ionicons,
@@ -18,14 +18,22 @@ import { useRouter } from "expo-router";
 import EmptyMessage from "@/components/EmptyMessage";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import Coupon from "@/components/Coupon";
 
 export default function CartScreen() {
   const modalRef = useRef<ModalRef>(null);
   const router = useRouter();
-  const { cart, totalPrice, sumAmount, discountAmount, deleteProduct } =
+  const { cart, coupons, setCoupons, totalPrice, sumAmount, discountAmount, deleteProduct } =
     useCart();
 
   const { user} = useAuth();
+
+  const newOrder = () =>{
+
+    //router.push("/example");
+
+    router.push("/generateOrder");
+  }
 
   return (
     <Modal ref={modalRef} color="#FADDE0">
@@ -99,10 +107,7 @@ export default function CartScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.coupon}>
-              <Ionicons name="pricetag-outline" size={20} color="black" />
-              <Text style={styles.couponText}>Aplicar cupón</Text>
-            </TouchableOpacity>
+            <Coupon coupons={coupons} setCoupons={setCoupons}/>
 
             <View style={styles.priceDetails}>
               <Text style={styles.priceLabel}>Detalles del precio</Text>
@@ -119,7 +124,7 @@ export default function CartScreen() {
 
           <TouchableOpacity
             style={styles.checkoutButton}
-            onPress={() => router.push("/generateOrder")}
+            onPress={newOrder}
           >
             <Text style={styles.checkoutText}>Comprar</Text>
           </TouchableOpacity>
@@ -178,15 +183,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   quantityText: { marginHorizontal: 10 },
-  coupon: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  couponText: { marginLeft: 10 },
   priceDetails: {
     backgroundColor: "#fff",
     padding: 16,

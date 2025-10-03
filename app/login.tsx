@@ -17,8 +17,8 @@ import Toast from "react-native-toast-message";
 import LoadingOverlay from "@/components/LoadingOverlay";
 
 const loginSchema = z.object({
-  email: z.string().email("Correo inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+  email: z.string().min(1, "El correo es requerido").email("Correo inválido"),
+  password: z.string().min(1, "La clave es requerida").min(6, "Mínimo 6 caracteres"),
 });
 
 type LoginType = z.infer<typeof loginSchema>;
