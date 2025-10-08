@@ -15,6 +15,15 @@ export type ProductVariationType = {
   }[];
 }
 
+
+export type ProductCategoryType = {
+  id:number;
+  name:string;
+  slug:string;
+}
+
+
+
 export type ProductType = {
   id: number;
   name: string;
@@ -25,6 +34,7 @@ export type ProductType = {
   sale_price: number;
   price_html: string;
   stock_quantity: number;
+  categories: ProductCategoryType[];
   images: { 
     src: string 
   }[];

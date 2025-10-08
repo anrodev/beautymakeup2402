@@ -29,9 +29,6 @@ export default function CartScreen() {
   const { user} = useAuth();
 
   const newOrder = () =>{
-
-    //router.push("/example");
-
     router.push("/generateOrder");
   }
 
@@ -71,7 +68,7 @@ export default function CartScreen() {
                   />
                 ) : (
                   <Image
-                    source={require("@/assets/images/categories/notfound.jpg")}
+                    source={require("@/assets/images/notfound.jpg")}
                     style={styles.productImage}
                   />
                 )}

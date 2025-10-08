@@ -14,9 +14,10 @@ import { useCart } from "@/context/CartContext";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchCustomer, fetchGenerateOrder } from "@/lib/api";
+import { fetchCustomer, fetchGenerateOrder, fetchGiftCard } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import { ProductGiftCardType } from "@/types";
 
 const schema = z.object({
   first_name: z.string().min(1, "El nombre es obligatorio"),
@@ -30,7 +31,7 @@ const schema = z.object({
   phone: z.string().min(1, "El teléfono es obligatorio"),
 });
 
-export type OrderType = z.infer<typeof schema>;
+export type OrderSchemaType = z.infer<typeof schema>;
 
 export default function GenerateOrderScreen() {
   const modalRef = useRef<ModalRef>(null);
@@ -44,7 +45,7 @@ export default function GenerateOrderScreen() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<OrderType>({
+  } = useForm<OrderSchemaType>({
     resolver: zodResolver(schema),
     defaultValues: {
       first_name: "",
@@ -64,11 +65,11 @@ export default function GenerateOrderScreen() {
       if (user) {
         setLoading(true);
         const customer = await fetchCustomer(user.id);
-        setValue("first_name",customer.billing.first_name);
-        setValue("last_name",customer.billing.last_name);
-        setValue("address_1",customer.billing.address_1);
-        setValue("city",customer.billing.city);
-        setValue("state",customer.billing.state);
+        setValue("first_name", customer.billing.first_name);
+        setValue("last_name", customer.billing.last_name);
+        setValue("address_1", customer.billing.address_1);
+        setValue("city", customer.billing.city);
+        setValue("state", customer.billing.state);
         setValue("postcode", customer.billing.postcode);
         setValue("country", customer.billing.country);
         setValue("email", customer.billing.email);
@@ -78,32 +79,82 @@ export default function GenerateOrderScreen() {
       if (error instanceof Error) {
         console.log(error.message);
       }
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
 
-  const onSubmit = async (data: OrderType) => {
+  const isDateValidAndOneDayAhead = (dateStr: string): boolean => {
+    const formatRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+    if (!formatRegex.test(dateStr)) return false;
+
+    const inputDate = new Date(dateStr.replace(" ", "T"));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    return inputDate >= tomorrow;
+  };
+
+  const newDate = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 2);
+    return now.toISOString().replace("T", " ").slice(0, 19);
+  };
+
+  const onSubmit = async (data: OrderSchemaType) => {
     try {
       setLoading(true);
 
-      const code = (coupons.length>0)?coupons[0].code:null
-      
+      const code = coupons.length > 0 ? coupons[0].code : null;
+
       const order = await fetchGenerateOrder(data, cart, code);
 
-      console.log(order);
+      const giftCards = cart
+        .filter((item) => item.gift_card != null)
+        .map((item) => {
+          const { recipient, sender, balance, deliver_date } = item.gift_card!;
+
+          const deliverDate = isDateValidAndOneDayAhead(deliver_date!)
+            ? deliver_date
+            : newDate();
+
+          const order_item = order.lineItems.find(ord => ord.product_id === item.id);
+
+          const newGiftCards: ProductGiftCardType = {
+            recipient,
+            sender,
+            balance,
+            order_id: order.orderId,
+            order_item_id: order_item?.id
+          };
+
+          if (deliverDate) {
+            newGiftCards.deliver_date = deliverDate;
+          }
+
+          return newGiftCards;
+        });
+
+      if (giftCards.length > 0) {
+        await fetchGiftCard(giftCards);
+      }
 
       router.push({
         pathname: "/checkout",
-        params: {...order}
+        params: {
+          orderId: order.orderId,
+          orderKey: order.orderKey,
+          paymentUrl: order.paymentUrl
+        },
       });
-      
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
       }
-    }finally{
-
+    } finally {
       setLoading(false);
     }
   };
@@ -125,7 +176,6 @@ export default function GenerateOrderScreen() {
           </TouchableOpacity>
           <Text style={styles.textHeader}>Información del Pedido</Text>
         </View>
-
       </View>
 
       <View style={styles.container}>

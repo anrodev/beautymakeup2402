@@ -57,6 +57,14 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="search"
+            options={{
+              headerShown: false,
+              presentation: "transparentModal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
             name="cart"
             options={{
               headerShown: false,
@@ -82,14 +90,6 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="settings"
-            options={{
-              headerShown: false,
-              presentation: "transparentModal",
-              animation: "slide_from_right",
-            }}
-          />
-          <Stack.Screen
-            name="appearance"
             options={{
               headerShown: false,
               presentation: "transparentModal",

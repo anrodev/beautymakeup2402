@@ -12,8 +12,6 @@ export type ProductComponentProps = {
 };
 
 const Product = ({ item, row }: ProductComponentProps) => {
-
-
   const router = useRouter();
   return (
     <>
@@ -30,7 +28,8 @@ const Product = ({ item, row }: ProductComponentProps) => {
                 price_html: cleanHtml(item.price_html),
                 stock_quantity: item.stock_quantity.toString(),
                 images: JSON.stringify(item.images),
-                attributes: JSON.stringify(item.attributes)
+                categories: JSON.stringify(item.categories),
+                attributes: JSON.stringify(item.attributes),
               },
             })
           }
@@ -44,22 +43,26 @@ const Product = ({ item, row }: ProductComponentProps) => {
               />
             ) : (
               <Image
-                source={require("@/assets/images/categories/notfound.jpg")}
+                source={require("@/assets/images/notfound.jpg")}
                 style={stylesTwoItem.image}
                 resizeMode="cover"
               />
             )}
 
-            {item.stock_quantity > 0 ? (
-              <View style={stylesTwoItem.stockBadge}>
-                <Text style={stylesTwoItem.stockText}>
-                  {item.stock_quantity} en stock
-                </Text>
-              </View>
-            ) : (
-              <View style={stylesTwoItem.stockBadgeError}>
-                <Text style={stylesTwoItem.stockText}>sin en stock</Text>
-              </View>
+            {!item.categories.some((item) => item.id === 219) && (
+              <>
+                {item.stock_quantity > 0 ? (
+                  <View style={stylesTwoItem.stockBadge}>
+                    <Text style={stylesTwoItem.stockText}>
+                      {item.stock_quantity} en stock
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={stylesTwoItem.stockBadgeError}>
+                    <Text style={stylesTwoItem.stockText}>sin en stock</Text>
+                  </View>
+                )}
+              </>
             )}
           </View>
           <Text style={stylesTwoItem.name}>{item.name}</Text>
@@ -78,7 +81,8 @@ const Product = ({ item, row }: ProductComponentProps) => {
                 price_html: cleanHtml(item.price_html),
                 stock_quantity: item.stock_quantity.toString(),
                 images: JSON.stringify(item.images),
-                attributes: JSON.stringify(item.attributes)
+                categories: JSON.stringify(item.categories),
+                attributes: JSON.stringify(item.attributes),
               },
             })
           }
@@ -91,7 +95,7 @@ const Product = ({ item, row }: ProductComponentProps) => {
             />
           ) : (
             <Image
-              source={require("@/assets/images/categories/notfound.jpg")}
+              source={require("@/assets/images/notfound.jpg")}
               style={stylesOneItem.image}
               resizeMode="cover"
             />
@@ -99,13 +103,20 @@ const Product = ({ item, row }: ProductComponentProps) => {
 
           <View style={stylesOneItem.infoContainer}>
             <Text style={stylesOneItem.name}>{item.name}</Text>
-            <Text style={stylesOneItem.price}>{cleanHtml(item.price_html)}</Text>
-            {item.stock_quantity > 0 ? (
-              <Text style={stylesOneItem.stock}>
-                {item.stock_quantity} en stock
-              </Text>
-            ) : (
-              <Text style={stylesOneItem.stockError}>sin stock</Text>
+            <Text style={stylesOneItem.price}>
+              {cleanHtml(item.price_html)}
+            </Text>
+
+            {!item.categories.some((item) => item.id === 219) && (
+              <>
+                {item.stock_quantity > 0 ? (
+                  <Text style={stylesOneItem.stock}>
+                    {item.stock_quantity} en stock
+                  </Text>
+                ) : (
+                  <Text style={stylesOneItem.stockError}>sin stock</Text>
+                )}
+              </>
             )}
           </View>
         </TouchableOpacity>

@@ -11,7 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCategories } from "@/lib/api";
 import { CategoryType } from "@/types";
-import Category from "@/components/Category"
+import Category from "@/components/Category";
+import LottieView from "lottie-react-native";
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<CategoryType[]>([]);
@@ -19,7 +20,6 @@ export default function CategoriesScreen() {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
 
   const handleLoadMore = () => {
     if (!isLoadingMore && page <= totalPages) {
@@ -29,7 +29,6 @@ export default function CategoriesScreen() {
 
   const getCategories = async (currentPage: number) => {
     try {
-
       setIsLoadingMore(true);
 
       const { records } = await fetchCategories(100, currentPage);
@@ -39,7 +38,6 @@ export default function CategoriesScreen() {
       setTotalPages(records.totalPages);
 
       setCategories((prev) => [...prev, ...records.categories]);
-
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
@@ -63,33 +61,44 @@ export default function CategoriesScreen() {
     getCategories(page);
   }, [page]);
 
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Categorías de productos ({total})</Text>
         <Ionicons name="chevron-forward" size={20} color="#000" />
       </View>
-
-      <FlatList
-        data={categories}
-        renderItem={({ item }) => <Category item={item}/>}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={3}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.4}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={
-          !isLoadingMore ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No se encontraron categorías</Text>
-            </View>
-          ) : null
-        }
-      />
+      {categories.length === 0 && isLoadingMore ? (
+        <View style={styles.loaderContainer}>
+          <LottieView
+            source={require("@/assets/lottiefiles/fullScreenLoader.json")}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={categories}
+          renderItem={({ item }) => <Category item={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={3}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            !isLoadingMore ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  No se encontraron categorías
+                </Text>
+              </View>
+            ) : null
+          }
+        />
+      )}
     </View>
   );
 }
@@ -124,5 +133,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#666",
-  }
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

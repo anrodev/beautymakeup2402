@@ -8,10 +8,10 @@ const Category = ({ item }: { item: CategoryType }) => {
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() =>
-        router.push({
+        router.replace({
           pathname: "/(drawer)/(tabs)/shop",
           params: {
-            category:item.id.toString()
+            filter:JSON.stringify({category:item.id,search:""})
           },
         })
       }
@@ -25,7 +25,7 @@ const Category = ({ item }: { item: CategoryType }) => {
           />
         ) : (
           <Image
-            source={require("@/assets/images/categories/notfound.jpg")}
+            source={require("@/assets/images/notfound.jpg")}
             style={styles.image}
             resizeMode="cover"
           />

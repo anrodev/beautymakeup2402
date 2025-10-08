@@ -1,9 +1,10 @@
-import { OrderType } from "@/app/generateOrder";
+import { OrderSchemaType } from "@/app/generateOrder";
 import { API_URL, getWooAuthHeader } from "../config";
-import { ApiErrorType, CartType, CouponType, OrderRefType } from "@/types";
+import { ApiErrorType, CartType, CouponType, OrderRefType, OrderType, ProductGiftCardType } from "@/types";
+
 
 export const fetchGenerateOrder = async (
-  order: OrderType,
+  order: OrderSchemaType,
   products: CartType[],
   couponCode: string | null
 ) => {
@@ -11,12 +12,12 @@ export const fetchGenerateOrder = async (
 
   const productItems = products.map(({ id, amount }) => ({
     product_id: id,
-    quantity: amount,
+    quantity: amount
   }));
 
   const body: any = {
-    payment_method: "cod",
-    payment_method_title: "Pedido pendiente (App Móvil)",
+    payment_method: "bacs",
+    payment_method_title: "Transferencia bancaria",
     set_paid: false,
     billing: {
       ...shipping,
@@ -50,13 +51,14 @@ export const fetchGenerateOrder = async (
     throw new Error(error.message || "Unknown error");
   }
 
-  const data: { id: number; order_key: string } = await res.json();
+  const data:OrderType = await res.json();
 
   const orderId = data.id;
   const orderKey = data.order_key;
+  const lineItems = data.line_items;
   const paymentUrl = `${API_URL}/pago/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
 
-  return {orderId,orderKey,paymentUrl};
+  return {orderId,orderKey,lineItems,paymentUrl};
 };
 
 export const fetchCustomer = async (userId: number) => {
@@ -74,9 +76,29 @@ export const fetchCustomer = async (userId: number) => {
     throw new Error(error.message || "Unknown error");
   }
 
-  const customer: { billing: OrderType } = await customerRes.json();
+  const customer: { billing: OrderSchemaType } = await customerRes.json();
 
   return customer;
+};
+
+
+export const fetchGiftCard = async (giftCardData:ProductGiftCardType[]) => {
+  const giftCardRes = await fetch(
+    `${API_URL}/wp-json/wc/v3/gift-cards/batch`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: getWooAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({"create":giftCardData}),
+    }
+  );
+
+  if (!giftCardRes.ok) {
+    const error: ApiErrorType = await giftCardRes.json();
+    throw new Error(error.message || "Unknown error");
+  }
 };
 
 export const fetchCoupon = async (coupon: string) => {

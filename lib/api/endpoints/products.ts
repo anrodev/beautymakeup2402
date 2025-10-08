@@ -6,6 +6,7 @@ export const fetchProducts = async (
   perPage: number,
   page: number,
   category: number | null = null,
+  search: string,
   orderby: string = "date",
   order: string = "desc"
 ) => {
@@ -19,6 +20,10 @@ export const fetchProducts = async (
 
   if (category !== null) {
     params.append("category", String(category));
+  }
+
+  if (search) {
+    params.append("search", search);
   }
 
   const res = await fetch(

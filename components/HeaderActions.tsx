@@ -11,8 +11,18 @@ const HeaderActions = () => {
 
   return (
     <View style={styles.container}>
+
       <TouchableOpacity
-        style={{ marginLeft: 10, marginRight: 20 }}
+        style={{ marginHorizontal: 5 }}
+        onPress={() => router.push("/search")}
+      >
+        <View style={{ position: "relative" }}>
+          <Ionicons name="search" size={25} color="black" />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={{ marginHorizontal: 20 }}
         onPress={() => router.push("/cart")}
       >
         <View style={{ position: "relative" }}>

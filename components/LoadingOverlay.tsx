@@ -15,7 +15,7 @@ const LoadingOverlay = ({ visible }: Props) => {
     >
       <View style={styles.overlay}>
         <LottieView
-          source={require('@/assets/loader.json')}
+          source={require('@/assets/lottiefiles/loader.json')}
           autoPlay
           loop
           style={styles.animation}

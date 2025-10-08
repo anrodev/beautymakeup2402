@@ -11,20 +11,22 @@ import RenderHTML from "react-native-render-html";
 import { useRef, useEffect, useState } from "react";
 import Modal, { ModalRef } from "@/components/Modal";
 import { useLocalSearchParams } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Product from "@/components/Product";
-import { ProductType, ProductVariationType } from "@/types";
+import { ProductGiftCardType, ProductType, ProductVariationType } from "@/types";
 import { useCart } from "@/context/CartContext";
 import HeaderActions from "@/components/HeaderActions";
 import Toast from "react-native-toast-message";
 import ProductVariation from "@/components/ProductVariation";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { fetchProductVariations } from "@/lib/api";
+import GiftCard, { GiftCardRefType } from "@/components/GiftCard";
 
 type AttributeType = {
   name: string;
   option: string | null;
 };
+
 
 export default function ProductDetailScreen() {
   const { width } = useWindowDimensions();
@@ -45,6 +47,9 @@ export default function ProductDetailScreen() {
 
   const { addToCart } = useCart();
 
+  const giftCardRef = useRef<GiftCardRefType>(null);
+
+
   const [product, setProduct] = useState<ProductType>({
     id: Number(params.id),
     name: params.name as string,
@@ -56,6 +61,7 @@ export default function ProductDetailScreen() {
     price_html: params.price_html as string,
     stock_quantity: Number(params.stock_quantity),
     images: params.images ? JSON.parse(params.images as string) : [],
+    categories: params.categories ? JSON.parse(params.categories as string) : [],
     attributes: params.attributes
       ? JSON.parse(params.attributes as string)
       : [],
@@ -64,6 +70,9 @@ export default function ProductDetailScreen() {
   const [products, setProducts] = useState<ProductType[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+
+  const giftCard = product.categories.some(item=>item.id===219);
 
   const changeAttribute = (name: string, option: string | null) => {
   
@@ -129,9 +138,10 @@ export default function ProductDetailScreen() {
     }
   };
 
-  const addProduct = async () => {
+  const addProduct = async (gift_card:ProductGiftCardType|null=null) => {
     try {
-      await addToCart({ ...product, amount: 1 });
+
+      await addToCart({ ...product, gift_card, amount: 1 });
 
       Toast.show({
         type: "success",
@@ -214,7 +224,7 @@ export default function ProductDetailScreen() {
             </View>
             <Text style={styles.title}>{product.name}</Text>
             <Text style={styles.price}>{product.price_html}</Text>
-            <Text
+            {!giftCard && <Text
               style={{
                 ...styles.stock,
                 color: product.stock_quantity > 0 ? "green" : "red",
@@ -223,7 +233,7 @@ export default function ProductDetailScreen() {
               {product.stock_quantity > 0
                 ? `${product.stock_quantity} en stock`
                 : "Sin stock"}
-            </Text>
+            </Text>}
 
             {(product.type=="variable" && productVariations.length>0)&&<View>
               {product.attributes.map((attr, i: number) => (
@@ -246,6 +256,10 @@ export default function ProductDetailScreen() {
               contentWidth={width}
               source={{ html: product.description }}
             />
+
+            {giftCard && <GiftCard price={product.price}  addProduct={addProduct} ref={giftCardRef}/>}
+
+
           </View>
         }
         renderItem={({ item }) => <Product item={item} row={true} />}
@@ -255,9 +269,9 @@ export default function ProductDetailScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {product.stock_quantity > 0 && (
+      {(product.stock_quantity > 0 || giftCard) && (
         <View style={{ margin: 20 }}>
-          <TouchableOpacity style={styles.button} onPress={addProduct}>
+          <TouchableOpacity style={styles.button} onPress={() => giftCard ? giftCardRef.current?.submit() : addProduct()}>
             <Text style={styles.buttonText}>Añadir a la cesta</Text>
           </TouchableOpacity>
         </View>

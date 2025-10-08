@@ -77,7 +77,8 @@ export default function HomeScreen() {
                   price_html: cleanHtml(productTiktok.price_html),
                   stock_quantity: productTiktok.stock_quantity.toString(),
                   images: JSON.stringify(productTiktok.images),
-                  attributes: JSON.stringify(productTiktok.attributes)
+                  attributes: JSON.stringify(productTiktok.attributes),
+                  categories: JSON.stringify(productTiktok.categories)
                 },
               })
             }
@@ -111,10 +112,10 @@ export default function HomeScreen() {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() =>
-          router.push({
+          router.replace({
             pathname: "/(drawer)/(tabs)/shop",
             params: {
-              category: "223",
+              filter:JSON.stringify({category:223,search:""})
             },
           })
         }
