@@ -62,11 +62,9 @@ export default function CheckoutScreen() {
     const { url } = navState;
 
     if (url.includes("order-received")) {
-
       const orderId = Number(params.orderId as string);
 
       getOrder(orderId);
-
     } else if (
       url.includes("cancel_order=true") ||
       url.includes("cancelled") ||
@@ -114,7 +112,14 @@ export default function CheckoutScreen() {
           </Text>
           <TouchableOpacity
             style={{ ...styles.buttonNext, backgroundColor: "#ff7070ff" }}
-            onPress={() => router.replace("/(drawer)/(tabs)/shop")}
+            onPress={() =>
+              router.push({
+                pathname: "/(drawer)/(tabs)/shop",
+                params: {
+                  filter: JSON.stringify({ category: null, search: "" }),
+                },
+              })
+            }
           >
             <Text style={{ color: "white", fontSize: 20 }}>Ok</Text>
           </TouchableOpacity>
@@ -130,7 +135,14 @@ export default function CheckoutScreen() {
           <Text style={styles.messageSubtitle}>Gracias por tu compra 🥳</Text>
           <TouchableOpacity
             style={{ ...styles.buttonNext, backgroundColor: "#8ad188ff" }}
-            onPress={() => router.replace("/(drawer)/(tabs)/shop")}
+            onPress={() =>
+              router.push({
+                pathname: "/(drawer)/(tabs)/shop",
+                params: {
+                  filter: JSON.stringify({ category: null, search: "" }),
+                },
+              })
+            }
           >
             <Text style={{ color: "white", fontSize: 20 }}>Ok</Text>
           </TouchableOpacity>

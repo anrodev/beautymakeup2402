@@ -1,12 +1,14 @@
 import { OrderSchemaType } from "@/app/generateOrder";
 import { API_URL, getWooAuthHeader } from "../config";
-import { ApiErrorType, CartType, CouponType, OrderRefType, OrderType, ProductGiftCardType } from "@/types";
+import { ApiErrorType, CartType, CouponType, GiftCardOrderType, GiftCardType, OrderRefType, OrderType, ProductGiftCardType } from "@/types";
+
 
 
 export const fetchGenerateOrder = async (
   order: OrderSchemaType,
   products: CartType[],
-  couponCode: string | null
+  couponCode: string | null,
+  giftCards: GiftCardOrderType[]
 ) => {
   const { email, phone, ...shipping } = order;
 
@@ -34,6 +36,11 @@ export const fetchGenerateOrder = async (
         code: couponCode
       }
     ];
+  }
+
+  if(giftCards.length>0){
+
+    body.gift_cards = giftCards;
   }
 
   const res = await fetch(`${API_URL}/wp-json/wc/v3/orders`, {
@@ -82,7 +89,27 @@ export const fetchCustomer = async (userId: number) => {
 };
 
 
-export const fetchGiftCard = async (giftCardData:ProductGiftCardType[]) => {
+export const fetchGiftCard = async (code: string) => {
+  const giftCardRes = await fetch(
+    `${API_URL}/wp-json/wc/v3/gift-cards?code=${code}`,
+    {
+      headers: {
+        Authorization: getWooAuthHeader(),
+      },
+    }
+  );
+
+  if (!giftCardRes.ok) {
+    const error: ApiErrorType = await giftCardRes.json();
+    throw new Error(error.message || "Unknown error");
+  }
+
+  const giftCard:GiftCardType[] = await giftCardRes.json();
+
+  return giftCard;
+};
+
+export const fetchAddGiftCards = async (giftCardData:ProductGiftCardType[]) => {
   const giftCardRes = await fetch(
     `${API_URL}/wp-json/wc/v3/gift-cards/batch`,
     {

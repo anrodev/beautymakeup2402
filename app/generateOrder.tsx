@@ -14,10 +14,15 @@ import { useCart } from "@/context/CartContext";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchCustomer, fetchGenerateOrder, fetchGiftCard } from "@/lib/api";
+import {
+  fetchCustomer,
+  fetchGenerateOrder,
+  fetchAddGiftCards,
+} from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { ProductGiftCardType } from "@/types";
+import Toast from "react-native-toast-message";
 
 const schema = z.object({
   first_name: z.string().min(1, "El nombre es obligatorio"),
@@ -36,7 +41,7 @@ export type OrderSchemaType = z.infer<typeof schema>;
 export default function GenerateOrderScreen() {
   const modalRef = useRef<ModalRef>(null);
   const router = useRouter();
-  const { cart, coupons } = useCart();
+  const { cart, coupons, giftCards } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -110,25 +115,29 @@ export default function GenerateOrderScreen() {
 
       const code = coupons.length > 0 ? coupons[0].code : null;
 
-      const order = await fetchGenerateOrder(data, cart, code);
+      const order = await fetchGenerateOrder(data, cart, code, giftCards);
 
-      const giftCards = cart
+      const giftCardsOrder = cart
         .filter((item) => item.gift_card != null)
         .map((item) => {
-          const { recipient, sender, balance, deliver_date } = item.gift_card!;
+          const { recipient, sender, message, balance, deliver_date } =
+            item.gift_card!;
 
           const deliverDate = isDateValidAndOneDayAhead(deliver_date!)
             ? deliver_date
             : newDate();
 
-          const order_item = order.lineItems.find(ord => ord.product_id === item.id);
+          const order_item = order.lineItems.find(
+            (ord) => ord.product_id === item.id
+          );
 
           const newGiftCards: ProductGiftCardType = {
             recipient,
             sender,
             balance,
+            message,
             order_id: order.orderId,
-            order_item_id: order_item?.id
+            order_item_id: order_item?.id,
           };
 
           if (deliverDate) {
@@ -138,8 +147,8 @@ export default function GenerateOrderScreen() {
           return newGiftCards;
         });
 
-      if (giftCards.length > 0) {
-        await fetchGiftCard(giftCards);
+      if (giftCardsOrder.length > 0) {
+        await fetchAddGiftCards(giftCardsOrder);
       }
 
       router.push({
@@ -147,12 +156,19 @@ export default function GenerateOrderScreen() {
         params: {
           orderId: order.orderId,
           orderKey: order.orderKey,
-          paymentUrl: order.paymentUrl
+          paymentUrl: order.paymentUrl,
         },
       });
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
+
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: error.message,
+          position: "bottom",
+        });
       }
     } finally {
       setLoading(false);

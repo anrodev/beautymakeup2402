@@ -6,7 +6,7 @@ import {
   Image,
   Text,
 } from "react-native";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Modal, { ModalRef } from "@/components/Modal";
 import {
   Ionicons,
@@ -19,11 +19,13 @@ import EmptyMessage from "@/components/EmptyMessage";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import Coupon from "@/components/Coupon";
+import GiftCardCode from "@/components/GiftCardCode";
+
 
 export default function CartScreen() {
   const modalRef = useRef<ModalRef>(null);
   const router = useRouter();
-  const { cart, coupons, setCoupons, totalPrice, sumAmount, discountAmount, deleteProduct } =
+  const { cart, coupons, setCoupons, giftCards, setGiftCards, totalPrice, sumAmount, discountAmount, deleteProduct } =
     useCart();
 
   const { user} = useAuth();
@@ -105,6 +107,8 @@ export default function CartScreen() {
             ))}
 
             <Coupon coupons={coupons} setCoupons={setCoupons}/>
+
+            <GiftCardCode giftCards={giftCards} setGiftCards={setGiftCards}/>
 
             <View style={styles.priceDetails}>
               <Text style={styles.priceLabel}>Detalles del precio</Text>

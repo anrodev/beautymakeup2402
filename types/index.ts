@@ -6,3 +6,4 @@ export * from './users';
 export * from './coupons';
 export * from './order';
 export * from './filter';
+export * from './giftCard';

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { CartType, CouponType } from "@/types";
+import { CartType, CouponType, GiftCardOrderType } from "@/types";
 
 type CartContextType = {
   cart: CartType[];
   coupons: CouponType[];
+  giftCards: GiftCardOrderType[];
   clearCart: () => void;
   setCoupons: (coupon:CouponType[]) => void;
+  setGiftCards: (code:GiftCardOrderType[]) => void;
   addToCart: (product: CartType) => Promise<void>;
   sumAmount: (id: number) => Promise<void>;
   discountAmount: (id: number) => Promise<void>;
@@ -30,6 +32,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cart, setCart] = useState<CartType[]>([]);
   const [coupons, setCoupons] = useState<CouponType[]>([]);
+  const [giftCards, setGiftCards] = useState<GiftCardOrderType[]>([]);
   const [loading, setLoading] = useState(true);
 
   const getCart = async () => {
@@ -64,6 +67,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearCart = async () => {
     try {
       await AsyncStorage.removeItem("cart");
+      setCoupons([]);
+      setGiftCards([]);
       setCart([]);
     } catch (error) {
       console.error("Error al limpiar el carrito:", error);
@@ -132,8 +137,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         cart,
         coupons,
+        giftCards,
         clearCart,
         setCoupons,
+        setGiftCards,
         addToCart,
         sumAmount,
         discountAmount,

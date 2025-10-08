@@ -54,6 +54,7 @@ const GiftCard = forwardRef<GiftCardRefType, GiftCardPropsType>(
         const giftCardData: ProductGiftCardType = {
           recipient: data.email,
           sender: data.from,
+          message: data.message,
           balance: price,
           deliver_date: `${data.date} 00:00:00`,
         };
@@ -67,6 +68,13 @@ const GiftCard = forwardRef<GiftCardRefType, GiftCardPropsType>(
     }));
 
     const [showPicker, setShowPicker] = useState(false);
+
+    const parseLocalDate = (dateString: string) => {
+      const [year, month, day] = dateString.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    };
+
+
 
     return (
       <View>
@@ -135,8 +143,6 @@ const GiftCard = forwardRef<GiftCardRefType, GiftCardPropsType>(
                 label="Mensaje"
                 value={value}
                 onChangeText={onChange}
-                multiline
-                numberOfLines={4}
                 selectionColor="white"
                 textColor="black"
                 theme={{
@@ -169,15 +175,13 @@ const GiftCard = forwardRef<GiftCardRefType, GiftCardPropsType>(
 
                 {showPicker && (
                   <DateTimePicker
-                    value={value ? new Date(value) : new Date()}
+                    value={value ? parseLocalDate(value) : new Date()}
                     mode="date"
                     display={Platform.OS === "ios" ? "spinner" : "default"}
                     onChange={(event, selectedDate) => {
                       setShowPicker(false);
                       if (selectedDate) {
-                        const formatted = selectedDate
-                          .toISOString()
-                          .split("T")[0];
+                        const formatted = selectedDate.toISOString().split("T")[0];
                         onChange(formatted);
                       }
                     }}

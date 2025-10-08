@@ -5,6 +5,7 @@ export type ProductGiftCardType = {
   order_item_id?: number;
   recipient: string;
   sender: string;
+  message: string;
   balance: number;
   deliver_date?: string;
 }
