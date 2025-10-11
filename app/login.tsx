@@ -49,13 +49,13 @@ export default function LoginScreen() {
       await login(data.email, data.password);
 
       modalRef.current?.close();
+      
     } catch (error) {
       if (error instanceof Error) {
-        console.log(error.message);
         Toast.show({
           type: "error",
           text1: "Error",
-          text2: "email o clave incorrectos",
+          text2: error.message,
           position: "bottom",
         });
       }

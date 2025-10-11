@@ -1,8 +1,15 @@
 import { OrderSchemaType } from "@/app/generateOrder";
 import { API_URL, getWooAuthHeader } from "../config";
-import { ApiErrorType, CartType, CouponType, GiftCardOrderType, GiftCardType, OrderRefType, OrderType, ProductGiftCardType } from "@/types";
-
-
+import {
+  ApiErrorType,
+  CartType,
+  CouponType,
+  GiftCardOrderType,
+  GiftCardType,
+  OrderRefType,
+  OrderType,
+  ProductGiftCardType,
+} from "@/types";
 
 export const fetchGenerateOrder = async (
   order: OrderSchemaType,
@@ -14,7 +21,7 @@ export const fetchGenerateOrder = async (
 
   const productItems = products.map(({ id, amount }) => ({
     product_id: id,
-    quantity: amount
+    quantity: amount,
   }));
 
   const body: any = {
@@ -24,22 +31,21 @@ export const fetchGenerateOrder = async (
     billing: {
       ...shipping,
       email,
-      phone
+      phone,
     },
     shipping: shipping,
-    line_items: productItems
+    line_items: productItems,
   };
 
   if (couponCode) {
     body.coupon_lines = [
       {
-        code: couponCode
-      }
+        code: couponCode,
+      },
     ];
   }
 
-  if(giftCards.length>0){
-
+  if (giftCards.length > 0) {
     body.gift_cards = giftCards;
   }
 
@@ -50,7 +56,6 @@ export const fetchGenerateOrder = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
-
   });
 
   if (!res.ok) {
@@ -58,14 +63,14 @@ export const fetchGenerateOrder = async (
     throw new Error(error.message || "Unknown error");
   }
 
-  const data:OrderType = await res.json();
+  const data: OrderType = await res.json();
 
   const orderId = data.id;
   const orderKey = data.order_key;
   const lineItems = data.line_items;
   const paymentUrl = `${API_URL}/pago/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
 
-  return {orderId,orderKey,lineItems,paymentUrl};
+  return { orderId, orderKey, lineItems, paymentUrl };
 };
 
 export const fetchCustomer = async (userId: number) => {
@@ -88,7 +93,6 @@ export const fetchCustomer = async (userId: number) => {
   return customer;
 };
 
-
 export const fetchGiftCard = async (code: string) => {
   const giftCardRes = await fetch(
     `${API_URL}/wp-json/wc/v3/gift-cards?code=${code}`,
@@ -104,23 +108,22 @@ export const fetchGiftCard = async (code: string) => {
     throw new Error(error.message || "Unknown error");
   }
 
-  const giftCard:GiftCardType[] = await giftCardRes.json();
+  const giftCard: GiftCardType[] = await giftCardRes.json();
 
   return giftCard;
 };
 
-export const fetchAddGiftCards = async (giftCardData:ProductGiftCardType[]) => {
-  const giftCardRes = await fetch(
-    `${API_URL}/wp-json/wc/v3/gift-cards/batch`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: getWooAuthHeader(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({"create":giftCardData}),
-    }
-  );
+export const fetchAddGiftCards = async (
+  giftCardData: ProductGiftCardType[]
+) => {
+  const giftCardRes = await fetch(`${API_URL}/wp-json/wc/v3/gift-cards/batch`, {
+    method: "POST",
+    headers: {
+      Authorization: getWooAuthHeader(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ create: giftCardData }),
+  });
 
   if (!giftCardRes.ok) {
     const error: ApiErrorType = await giftCardRes.json();
@@ -148,16 +151,67 @@ export const fetchCoupon = async (coupon: string) => {
   return coupons;
 };
 
+export const fetchOrders = async (
+  userId: number,
+  perPage: number,
+  page: number,
+  dateFrom: string,
+  dateTo: string,
+  orderby: string = "date",
+  order: string = "desc"
+) => {
+  try {
 
-export const fecthOrder = async(order:number) =>{
-  const orderRes = await fetch(
-    `${API_URL}/wp-json/wc/v3/orders/${order}`,
-    {
-      headers: {
-        Authorization: getWooAuthHeader()
-      },
+    const params = new URLSearchParams({
+      customer: String(userId),
+      per_page: String(perPage),
+      page: String(page),
+      orderby,
+      order
+    });
+
+    if(dateFrom){
+
+      params.append("after", dateFrom+"T00:00:00Z");
     }
-  );
+
+    if(dateTo){
+
+      params.append("before", dateTo+"T23:59:59Z");
+    }
+
+    const res = await fetch(
+      `${API_URL}/wp-json/wc/v3/orders?${params.toString()}`,
+      {
+        headers: { Authorization: getWooAuthHeader() },
+      }
+    );
+
+    if (!res.ok) {
+      const error: ApiErrorType = await res.json();
+      throw new Error(error.message || "Unknown error");
+    }
+
+    const total = Number(res.headers.get("X-WP-Total") ?? 0);
+
+    const totalPages = Number(res.headers.get("X-WP-TotalPages") ?? 0);
+
+    const orders: OrderType[] = await res.json();
+
+    return { records: { orders, total, totalPages } };
+
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
+};
+
+export const fecthOrder = async (order: number) => {
+  const orderRes = await fetch(`${API_URL}/wp-json/wc/v3/orders/${order}`, {
+    headers: {
+      Authorization: getWooAuthHeader(),
+    },
+  });
 
   if (!orderRes.ok) {
     const error: ApiErrorType = await orderRes.json();
@@ -167,4 +221,29 @@ export const fecthOrder = async(order:number) =>{
   const orders: OrderRefType = await orderRes.json();
 
   return orders;
-}
+};
+
+export const fetchPutOrder = async (orderId:number,customerId:number) => {
+  
+  try {
+
+    const res = await fetch(`${API_URL}/wp-json/wc/v3/orders/${orderId}`,{
+      method: "PUT",
+      headers: {
+        Authorization: getWooAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ customer_id: customerId }),
+    });
+
+    if (!res.ok) {
+      const error: ApiErrorType = await res.json();
+      throw new Error(error.message || "Unknown error");
+    }
+    
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+
+};

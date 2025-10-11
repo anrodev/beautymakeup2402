@@ -49,6 +49,14 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="newAccount"
+            options={{
+              headerShown: false,
+              presentation: "transparentModal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
             name="productDetail"
             options={{
               headerShown: false,
@@ -89,7 +97,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="settings"
+            name="orders"
             options={{
               headerShown: false,
               presentation: "transparentModal",

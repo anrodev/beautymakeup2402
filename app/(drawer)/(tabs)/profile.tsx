@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -8,24 +8,38 @@ export default function ProfileScreen() {
 
   const router = useRouter();
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.optionContainer}  onPress={()=>router.push("/login")}>
+      <TouchableOpacity style={styles.optionContainer}  onPress={()=>user ? null :router.push("/login")}>
         <View style={{...styles.optionLeft,paddingTop:20, paddingBottom:20}}>
           <Ionicons name="person-circle" size={46} color="#CFCFCF" />
           <Text style={{...styles.optionText, fontSize:22, fontWeight:"bold"}}>{user ? user.nicename : 'Invitado'}</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.optionContainer} onPress={()=>router.push("/settings")}>
+      {!user && (<TouchableOpacity style={styles.optionContainer} onPress={()=>router.push("/newAccount")}>
         <View style={styles.optionLeft}>
-          <Ionicons name="settings-outline" size={30} color="black" />
-          <Text style={styles.optionText}>Ajustes</Text>
+          <Feather name="user-plus" size={30} color="black" />
+          <Text style={styles.optionText}>Crear Cuenta</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
-      </TouchableOpacity>
+      </TouchableOpacity>)}
+      {user && (<TouchableOpacity style={styles.optionContainer} onPress={()=>router.push("/orders")}>
+        <View style={styles.optionLeft}>
+          <Ionicons name="library-outline" size={30} color="black" />
+          <Text style={styles.optionText}>Ordenes</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="black" />
+      </TouchableOpacity>)}
+      {user && (<TouchableOpacity style={styles.optionContainer} onPress={logout}>
+        <View style={styles.optionLeft}>
+          <Ionicons name="exit-outline" size={30} color="black" />
+          <Text style={styles.optionText}>Salir</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="black" />
+      </TouchableOpacity>)}
     </View>
   );
 }

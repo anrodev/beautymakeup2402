@@ -91,15 +91,7 @@ export default function DrawerLayout() {
         )}
         onPress={() => router.push("/(drawer)/(tabs)/profile")}
       />
-      <DrawerItem
-        label={"Ajustes"}
-        labelStyle={{ color: "black" }}
-        icon={({ color, size }) => (
-          <Ionicons name="settings-outline" size={size} color="black" />
-        )}
-        onPress={() => router.push("/settings")}
-      />
-
+     
       <View
         style={{
           borderBottomWidth: 1,

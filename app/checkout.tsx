@@ -14,8 +14,9 @@ import { useRouter } from "expo-router";
 import { WebView } from "react-native-webview";
 
 import { useLocalSearchParams } from "expo-router";
-import { fecthOrder } from "@/lib/api";
+import { fecthOrder, fetchPutOrder } from "@/lib/api";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 
 export default function CheckoutScreen() {
@@ -33,10 +34,18 @@ export default function CheckoutScreen() {
 
   const { clearCart } = useCart();
 
+  const { user } = useAuth();
+
   const getOrder = async (orderId: number) => {
+    
     setLoading(true);
 
     try {
+
+      if(user){
+        await fetchPutOrder(orderId,user.id);
+      }
+
       const order = await fecthOrder(orderId);
 
       const status = ["pending", "processing", "on-hold", "completed"].includes(

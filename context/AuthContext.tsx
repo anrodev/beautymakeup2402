@@ -6,7 +6,7 @@ import { authenticateUser, checkTokenUser } from "@/lib/api";
 type AuthContextType = {
   user: UserType | null;
   token: string | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => void;
   logout: () => void;
   loading: boolean;
 };
@@ -19,7 +19,9 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,24 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (username: string, password: string) => {
     try {
       const authentication = await authenticateUser(username, password);
-
       const token = authentication.token;
       const userData: UserType = {
         id: authentication.id,
         email: authentication.user_email,
         nicename: authentication.user_nicename,
-        displayName: authentication.user_display_name
+        displayName: authentication.user_display_name,
       };
 
       setToken(token);
       setUser(userData);
       await AsyncStorage.setItem("authToken", token);
       await AsyncStorage.setItem("authUser", JSON.stringify(userData));
-
-      return true;
     } catch (error) {
-      console.error("Login error:", error);
-      return false;
+      throw new Error("Credenciales inválidas o error de conexión.");
     }
   };
 
