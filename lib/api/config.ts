@@ -4,6 +4,8 @@ import { encode as b64encode } from 'base-64';
 
 export const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
+export const ADMIN_AUTH = Constants.expoConfig?.extra?.admin;
+
 export const getJwtAuthHeader = () => {
 
   return `Bearer ${Constants.expoConfig?.extra?.jwtAuthSecretKey}`;
