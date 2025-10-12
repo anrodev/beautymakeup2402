@@ -73,26 +73,6 @@ export const fetchGenerateOrder = async (
   return { orderId, orderKey, lineItems, paymentUrl };
 };
 
-export const fetchCustomer = async (userId: number) => {
-  const customerRes = await fetch(
-    `${API_URL}/wp-json/wc/v3/customers/${userId}`,
-    {
-      headers: {
-        Authorization: getWooAuthHeader(),
-      },
-    }
-  );
-
-  if (!customerRes.ok) {
-    const error: ApiErrorType = await customerRes.json();
-    throw new Error(error.message || "Unknown error");
-  }
-
-  const customer: { billing: OrderSchemaType } = await customerRes.json();
-
-  return customer;
-};
-
 export const fetchGiftCard = async (code: string) => {
   const giftCardRes = await fetch(
     `${API_URL}/wp-json/wc/v3/gift-cards?code=${code}`,

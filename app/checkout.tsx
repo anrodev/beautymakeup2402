@@ -70,17 +70,11 @@ export default function CheckoutScreen() {
   const handleNavigationChange = (navState: any) => {
     const { url } = navState;
 
-    if (url.includes("order-received")) {
+    if (url.includes("order-received") || url.includes("cancel_order=true") || url.includes("cancelled") || url.includes("failed")) {
       const orderId = Number(params.orderId as string);
 
       getOrder(orderId);
-    } else if (
-      url.includes("cancel_order=true") ||
-      url.includes("cancelled") ||
-      url.includes("failed")
-    ) {
-      setOrderStatus("canceled");
-    }
+    } 
   };
 
   return (

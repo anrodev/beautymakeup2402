@@ -8,7 +8,7 @@ const Category = ({ item }: { item: CategoryType }) => {
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() =>
-        router.replace({
+        router.push({
           pathname: "/(drawer)/(tabs)/shop",
           params: {
             filter:JSON.stringify({category:item.id,search:""})

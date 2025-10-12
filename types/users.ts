@@ -6,9 +6,4 @@ export type AuthUserType = {
   user_display_name:string;
 }
 
-export type UserType = {
-  id:number;
-  email: string;
-  nicename: string;
-  displayName: string;
-};
+export type UserSessionType = AuthUserType & {id:number};

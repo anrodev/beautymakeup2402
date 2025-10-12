@@ -14,11 +14,7 @@ import { useCart } from "@/context/CartContext";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  fetchCustomer,
-  fetchGenerateOrder,
-  fetchAddGiftCards,
-} from "@/lib/api";
+import { fetchGenerateOrder, fetchAddGiftCards, fetchUser } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { ProductGiftCardType } from "@/types";
@@ -66,20 +62,19 @@ export default function GenerateOrderScreen() {
   });
 
   const getCustomer = async () => {
+    if (!user) return null;
     try {
-      if (user) {
-        setLoading(true);
-        const customer = await fetchCustomer(user.id);
-        setValue("first_name", customer.billing.first_name);
-        setValue("last_name", customer.billing.last_name);
-        setValue("address_1", customer.billing.address_1);
-        setValue("city", customer.billing.city);
-        setValue("state", customer.billing.state);
-        setValue("postcode", customer.billing.postcode);
-        setValue("country", customer.billing.country);
-        setValue("email", customer.billing.email);
-        setValue("phone", customer.billing.phone);
-      }
+      setLoading(true);
+      const customer = await fetchUser(user.id);
+      setValue("first_name", customer.billing.first_name);
+      setValue("last_name", customer.billing.last_name);
+      setValue("address_1", customer.billing.address_1);
+      setValue("city", customer.billing.city);
+      setValue("state", customer.billing.state);
+      setValue("postcode", customer.billing.postcode);
+      setValue("country", customer.billing.country);
+      setValue("email", customer.billing.email);
+      setValue("phone", customer.billing.phone);
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);

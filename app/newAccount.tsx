@@ -14,7 +14,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Toast from "react-native-toast-message";
 import LoadingOverlay from "@/components/LoadingOverlay";
-import { createUser } from "@/lib/api";
+import { fetchCreateUser } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 const newAccountSchema = z.object({
@@ -55,7 +55,7 @@ export default function NewAccountScreen() {
     try {
       setLoading(true);
 
-      const user = await createUser(
+      const user = await fetchCreateUser(
         data.email,
         data.username,
         data.name,

@@ -53,7 +53,7 @@ const OrderList = ({ order }: OrderProps) => {
           ✅ Pagada:{" "}
           {order.date_paid
             ? new Date(order.date_paid).toLocaleString()
-            : "pendiente"}
+            : "Pendiente"}
         </Text>
         <Text>📦 Estado: {translateOrderStatus(order.status)}</Text>
       </TouchableOpacity>

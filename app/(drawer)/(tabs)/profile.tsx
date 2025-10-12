@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,7 +15,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.optionContainer}  onPress={()=>user ? null :router.push("/login")}>
         <View style={{...styles.optionLeft,paddingTop:20, paddingBottom:20}}>
           <Ionicons name="person-circle" size={46} color="#CFCFCF" />
-          <Text style={{...styles.optionText, fontSize:22, fontWeight:"bold"}}>{user ? user.nicename : 'Invitado'}</Text>
+          <Text style={{...styles.optionText, fontSize:22, fontWeight:"bold"}}>{user ? user.user_nicename : 'Invitado'}</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>
@@ -23,6 +23,13 @@ export default function ProfileScreen() {
         <View style={styles.optionLeft}>
           <Feather name="user-plus" size={30} color="black" />
           <Text style={styles.optionText}>Crear Cuenta</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="black" />
+      </TouchableOpacity>)}
+      {user && (<TouchableOpacity style={styles.optionContainer} onPress={()=>router.push("/updateBilling")}>
+        <View style={styles.optionLeft}>
+          <MaterialIcons name="payment" size={24} color="black" />
+          <Text style={styles.optionText}>Información de Pago</Text>
         </View>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>)}

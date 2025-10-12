@@ -54,10 +54,6 @@ export default function Coupon({ coupons, setCoupons }: CouponProps) {
     return expires < now;
   };
 
-  const isCouponUsed = (coupon: CouponType): boolean => {
-    return coupon.usage_count > 0 || coupon.used_by.length > 0;
-  };
-
   const isCouponValid = (coupon: CouponType[]): boolean => {
     if (coupon.length > 0) {
       return !isCouponExpired(coupon[0]);

@@ -60,7 +60,7 @@ export default function OrdersScreen() {
       setIsLoadingMore(true);
 
       const { records } = await fetchOrders(
-        1,
+        user.id,
         10,
         currentPage,
         dateFrom,

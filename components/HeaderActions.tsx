@@ -40,7 +40,7 @@ const HeaderActions = () => {
         onPress={()=>!user?router.push("/login"):router.replace("/(drawer)/(tabs)/profile")}
       >
         <Ionicons name="person-outline" size={25} color="black" />
-        <Text style={{ marginLeft: 5, fontWeight:"bold" }}>{user?.nicename}</Text>
+        <Text style={{ marginLeft: 5, fontWeight:"bold" }}>{user?.user_nicename}</Text>
       </TouchableOpacity>
     </View>
   );

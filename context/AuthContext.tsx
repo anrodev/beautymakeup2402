@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UserType } from "@/types";
-import { authenticateUser, checkTokenUser } from "@/lib/api";
+import { UserSessionType } from "@/types";
+import { fetchAuthenticateUser, fetchCheckTokenUser } from "@/lib/api";
 
 type AuthContextType = {
-  user: UserType | null;
-  token: string | null;
+  user: UserSessionType | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
@@ -13,7 +12,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  token: null,
   login: async () => false,
   logout: () => {},
   loading: true,
@@ -22,25 +20,14 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserSessionType | null>(null);
   const [loading, setLoading] = useState(true);
 
   const login = async (username: string, password: string) => {
     try {
-      const authentication = await authenticateUser(username, password);
-      const token = authentication.token;
-      const userData: UserType = {
-        id: authentication.id,
-        email: authentication.user_email,
-        nicename: authentication.user_nicename,
-        displayName: authentication.user_display_name,
-      };
-
-      setToken(token);
-      setUser(userData);
-      await AsyncStorage.setItem("authToken", token);
-      await AsyncStorage.setItem("authUser", JSON.stringify(userData));
+      const authUser = await fetchAuthenticateUser(username, password);
+      setUser(authUser);
+      await AsyncStorage.setItem("authUser", JSON.stringify(authUser));
       return true;
     } catch (error) {
       throw new Error("Credenciales inválidas o error de conexión.");
@@ -48,22 +35,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = async () => {
-    setToken(null);
     setUser(null);
-    await AsyncStorage.removeItem("authToken");
     await AsyncStorage.removeItem("authUser");
   };
 
   const loadSession = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem("authToken");
+    
       const storedUser = await AsyncStorage.getItem("authUser");
 
-      if (storedToken && storedUser) {
-        const isValid = await checkTokenUser(storedUser);
+      const authUser:UserSessionType|null = storedUser ? JSON.parse(storedUser) : null;
+
+      if (authUser) {
+        const isValid = await fetchCheckTokenUser(authUser.token);
         if (isValid) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(authUser);
         } else {
           await logout();
         }
@@ -80,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
