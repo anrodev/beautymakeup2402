@@ -41,6 +41,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "xxxxxxxxx",
+      "jwtAuthSecretKey": "xxxxxxxxx",
+      "wooConsumerKey": "xxxxxxxxx",
+      "wooConsumerSecret": "xxxxxxxxx",
+      "admin": {"username":"xxxxxxxxx","password":"xxxxxxxxx"},
+      "router": {}
     }
   }
 }
