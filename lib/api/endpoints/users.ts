@@ -1,5 +1,10 @@
 import { UpdateBillingSchemaType } from "@/app/updateBilling";
-import { API_URL, ADMIN_AUTH, getJwtAuthHeader, getWooAuthHeader } from "../config";
+import {
+  API_URL,
+  ADMIN_AUTH,
+  getJwtAuthHeader,
+  getWooAuthHeader,
+} from "../config";
 import { ApiErrorType, AuthUserType, UserSessionType } from "@/types";
 
 const fetchAuthUser = async (credentials: {
@@ -120,7 +125,6 @@ export const fetchUser = async (
     }
 
     return await res.json();
-    
   } catch (err) {
     console.error("Error:", err);
     throw err;
@@ -149,6 +153,88 @@ export const fetchUpdateUserBilling = async (
     }
 
     return res.ok;
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
+};
+
+export const fetchResetUserPassword = async (email: string): Promise<{message:string}> => {
+  try {
+    const res = await fetch(`${API_URL}/wp-json/bdpwr/v1/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Unknown error");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
+};
+
+export const fetchValidateUserCode = async (
+  email: string,
+  code: string
+): Promise<{message:string}> => {
+  try {
+    const res = await fetch(`${API_URL}/wp-json/bdpwr/v1/validate-code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        code,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Unknown error");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
+};
+
+export const fetchSetUserPassword = async (
+  email: string,
+  code: string,
+  password: string
+): Promise<{message:string}> => {
+  try {
+    const res = await fetch(`${API_URL}/wp-json/bdpwr/v1/set-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        code,
+        password,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Unknown error");
+    }
+
+    return await res.json();
   } catch (err) {
     console.error("Error:", err);
     throw err;

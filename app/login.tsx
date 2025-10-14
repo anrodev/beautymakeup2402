@@ -15,20 +15,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import Toast from "react-native-toast-message";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import { useRouter } from "expo-router";
 
 const loginSchema = z.object({
   email: z.string().min(1, "El correo es requerido").email("Correo inválido"),
-  password: z.string().min(1, "La clave es requerida").min(6, "Mínimo 6 caracteres"),
+  password: z
+    .string()
+    .min(1, "La clave es requerida")
+    .min(6, "Mínimo 6 caracteres"),
 });
 
 type LoginType = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
+
   const modalRef = useRef<ModalRef>(null);
 
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+
+  const router = useRouter();
 
   const {
     control,
@@ -49,7 +56,6 @@ export default function LoginScreen() {
       await login(data.email, data.password);
 
       modalRef.current?.close();
-      
     } catch (error) {
       if (error instanceof Error) {
         Toast.show({
@@ -150,6 +156,10 @@ export default function LoginScreen() {
         >
           <Text style={styles.buttonText}>Continuar</Text>
         </TouchableOpacity>
+
+        <Text style={styles.link} onPress={() => router.push("/recoverAccount")}>
+          Recuperar contraseña
+        </Text>
       </ImageBackground>
       <LoadingOverlay visible={loading} />
     </Modal>
@@ -196,5 +206,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontWeight: "600",
+  },
+
+  link: {
+    marginTop:15,
+    color: "#ff00ffff",
+    fontSize: 16,
+    textDecorationLine: "underline",
   },
 });

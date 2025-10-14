@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { Drawer } from "expo-router/drawer";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";

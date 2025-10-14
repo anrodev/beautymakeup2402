@@ -49,6 +49,14 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="recoverAccount"
+            options={{
+              headerShown: false,
+              presentation: "transparentModal",
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
             name="newAccount"
             options={{
               headerShown: false,
