@@ -20,6 +20,7 @@ export const fetchProducts = async (
       page: String(page),
       orderby,
       order,
+      status: "publish"
     });
 
     if (category !== null) {

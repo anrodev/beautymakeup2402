@@ -2,6 +2,8 @@ import { OrderSchemaType } from "@/app/generateOrder";
 import { API_URL, getWooAuthHeader } from "../config";
 import {
   ApiErrorType,
+  AvailableMethodType,
+  CalculateShippingType,
   CartType,
   CouponType,
   GiftCardOrderType,
@@ -11,11 +13,40 @@ import {
   ProductGiftCardType,
 } from "@/types";
 
+export const fecthCalculateShipping = async (
+  order: OrderSchemaType,
+  products: CartType[]
+):Promise<CalculateShippingType> => {
+
+  const newProducts = products.map((item)=>({id:item.id,quantity:item.amount}));
+
+  const body = {
+    products:newProducts,
+    destination:order
+  }
+
+  const res = await fetch(`${API_URL}/wp-json/custom/v1/calculate-shipping`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const error: ApiErrorType = await res.json();
+    throw new Error(error.message || "Unknown error");
+  }
+
+  return await res.json();
+};
+
 export const fetchGenerateOrder = async (
   order: OrderSchemaType,
   products: CartType[],
   couponCode: string | null,
-  giftCards: GiftCardOrderType[]
+  giftCards: GiftCardOrderType[],
+  chosenMethod: AvailableMethodType
 ) => {
   try {
     const { email, phone, ...shipping } = order;
@@ -36,6 +67,13 @@ export const fetchGenerateOrder = async (
       },
       shipping: shipping,
       line_items: productItems,
+      shipping_lines: [
+        {
+          method_id: chosenMethod.method_id,
+          method_title: chosenMethod.title,
+          total: chosenMethod.cost.toString()
+        },
+      ]
     };
 
     if (couponCode) {
@@ -197,7 +235,7 @@ export const fetchOrders = async (
   }
 };
 
-export const fecthOrder = async (order: number):Promise<OrderRefType> => {
+export const fecthOrder = async (order: number): Promise<OrderRefType> => {
   try {
     const res = await fetch(`${API_URL}/wp-json/wc/v3/orders/${order}`, {
       headers: {
@@ -211,7 +249,6 @@ export const fecthOrder = async (order: number):Promise<OrderRefType> => {
     }
 
     return await res.json();
-
   } catch (err) {
     console.error("Error:", err);
     throw err;
@@ -235,7 +272,6 @@ export const fetchPutOrder = async (orderId: number, customerId: number) => {
     }
 
     return res.ok;
-
   } catch (error) {
     console.error("Error:", error);
     throw error;

@@ -27,3 +27,19 @@ export type OrderType = {
     line_items:lineItemsType[];
     status:string;
 }
+
+
+export type AvailableMethodType = {
+
+    method_id:string;
+    title:string;
+    cost:number;
+    min_amount:number;
+}
+
+
+export type CalculateShippingType = {
+
+    available_methods: AvailableMethodType[];
+    chosen_method:AvailableMethodType
+}

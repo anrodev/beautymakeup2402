@@ -14,7 +14,7 @@ import { useCart } from "@/context/CartContext";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchGenerateOrder, fetchAddGiftCards, fetchUser } from "@/lib/api";
+import { fetchGenerateOrder, fetchAddGiftCards, fetchUser, fecthCalculateShipping } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { ProductGiftCardType } from "@/types";
@@ -108,9 +108,13 @@ export default function GenerateOrderScreen() {
     try {
       setLoading(true);
 
+      const calculateShipping = await fecthCalculateShipping(data, cart);
+
+      const chosenMethod = calculateShipping.chosen_method;
+
       const code = coupons.length > 0 ? coupons[0].code : null;
 
-      const order = await fetchGenerateOrder(data, cart, code, giftCards);
+      const order = await fetchGenerateOrder(data, cart, code, giftCards, chosenMethod);
 
       const giftCardsOrder = cart
         .filter((item) => item.gift_card != null)
@@ -145,6 +149,10 @@ export default function GenerateOrderScreen() {
       if (giftCardsOrder.length > 0) {
         await fetchAddGiftCards(giftCardsOrder);
       }
+
+      console.log("cart:",JSON.stringify(cart,null,2));
+
+      console.log("data:",JSON.stringify(data,null,2));
 
       router.push({
         pathname: "/checkout",
