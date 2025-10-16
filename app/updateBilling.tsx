@@ -12,21 +12,23 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchUpdateUserBilling, fetchUser } from "@/lib/api";
+import { fetchCountries, fetchUpdateUserBilling, fetchUser } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import Toast from "react-native-toast-message";
+import { Picker } from "@react-native-picker/picker";
+import { CountryType, StateCountryType } from "@/types";
 
 const UpdateBillingSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
-  address_1: z.string(),
-  city: z.string(),
-  state: z.string(),
-  postcode: z.string(),
-  country: z.string(),
-  email: z.string().email("Correo inválido"),
-  phone: z.string(),
+  first_name: z.string().min(1, "El nombre es obligatorio"),
+  last_name: z.string().min(1, "El apellido es obligatorio"),
+  address_1: z.string().min(1, "La dirección es obligatoria"),
+  city: z.string().min(1, "La ciudad es obligatoria"),
+  state: z.string().min(1, "El estado o provincia es obligatorio"),
+  postcode: z.string().min(1, "El código postal es obligatorio"),
+  country: z.string().min(1, "El país es obligatorio"),
+  email: z.string().min(1, "El correo es obligatorio").email("Correo inválido"),
+  phone: z.string().min(1, "El teléfono es obligatorio"),
 });
 
 export type UpdateBillingSchemaType = z.infer<typeof UpdateBillingSchema>;
@@ -35,11 +37,14 @@ const UpdateBilling = () => {
   const modalRef = useRef<ModalRef>(null);
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [countries, setCountries] = useState<CountryType[]>([]);
+  const [states, setStates] = useState<StateCountryType[]>([]);
 
   const {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UpdateBillingSchemaType>({
     resolver: zodResolver(UpdateBillingSchema),
@@ -56,20 +61,45 @@ const UpdateBilling = () => {
     },
   });
 
-  const getUser = async () => {
+  const watchCountry = watch("country");
+  const watchState = watch("state");
+
+  
+  useEffect(() => {
+    if (!countries.length) return;
+
+    const selectedCountry = countries.find((c) => c.code === watchCountry);
+    if (selectedCountry?.states?.length) {
+      setStates(selectedCountry.states);
+
+      if (!selectedCountry.states.find((s) => s.code === watchState)) {
+        setValue("state", selectedCountry.states[0].code);
+      }
+    } else {
+      setStates([]);
+      setValue("state", "");
+    }
+  }, [watchCountry, countries]);
+
+  const getInfo = async () => {
     if (!user) return null;
     try {
       setLoading(true);
+
+      const newCountries = await fetchCountries();
+      setCountries(newCountries);
+
       const customer = await fetchUser(user.id);
+
       setValue("first_name", customer.billing.first_name);
       setValue("last_name", customer.billing.last_name);
-      setValue("address_1", customer.billing.address_1);
-      setValue("city", customer.billing.city);
-      setValue("state", customer.billing.state);
-      setValue("postcode", customer.billing.postcode);
-      setValue("country", customer.billing.country);
       setValue("email", customer.billing.email);
       setValue("phone", customer.billing.phone);
+      setValue("country", customer.billing.country || "ES");
+      setValue("city", customer.billing.city);
+      setValue("postcode", customer.billing.postcode);
+      setValue("address_1", customer.billing.address_1);
+      setValue("state", customer.billing.state || "");
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
@@ -109,7 +139,7 @@ const UpdateBilling = () => {
   };
 
   useEffect(() => {
-    getUser();
+    getInfo();
   }, []);
 
   return (
@@ -165,24 +195,57 @@ const UpdateBilling = () => {
             <Text style={styles.error}>{errors.last_name.message}</Text>
           )}
 
-          <Text style={styles.label}>Dirección</Text>
+          <Text style={styles.label}>País</Text>
           <Controller
             control={control}
-            name="address_1"
+            name="country"
             render={({ field }) => (
-              <TextInput
-                style={[styles.input, styles.textarea]}
-                placeholder="Dirección"
-                multiline
-                numberOfLines={4}
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                value={field.value}
-              />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={field.value}
+                  onValueChange={(value) => field.onChange(value)}
+                  style={{ height: 50 }}
+                >
+                  {countries.map((country) => (
+                    <Picker.Item
+                      key={country.code}
+                      label={country.name}
+                      value={country.code}
+                    />
+                  ))}
+                </Picker>
+              </View>
             )}
           />
-          {errors.address_1 && (
-            <Text style={styles.error}>{errors.address_1.message}</Text>
+          {errors.country && (
+            <Text style={styles.error}>{errors.country.message}</Text>
+          )}
+
+          <Text style={styles.label}>Estado/Provincia</Text>
+          <Controller
+            control={control}
+            name="state"
+            render={({ field }) => (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={field.value}
+                  onValueChange={(value) => field.onChange(value)}
+                  enabled={states.length > 0}
+                  style={{ height: 50 }}
+                >
+                  {states.map((state) => (
+                    <Picker.Item
+                      key={state.code}
+                      label={state.name}
+                      value={state.code}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          />
+          {errors.state && (
+            <Text style={styles.error}>{errors.state.message}</Text>
           )}
 
           <Text style={styles.label}>Ciudad</Text>
@@ -201,24 +264,6 @@ const UpdateBilling = () => {
           />
           {errors.city && (
             <Text style={styles.error}>{errors.city.message}</Text>
-          )}
-
-          <Text style={styles.label}>Estado</Text>
-          <Controller
-            control={control}
-            name="state"
-            render={({ field }) => (
-              <TextInput
-                style={styles.input}
-                placeholder="Estado"
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                value={field.value}
-              />
-            )}
-          />
-          {errors.state && (
-            <Text style={styles.error}>{errors.state.message}</Text>
           )}
 
           <Text style={styles.label}>Código Postal</Text>
@@ -240,22 +285,24 @@ const UpdateBilling = () => {
             <Text style={styles.error}>{errors.postcode.message}</Text>
           )}
 
-          <Text style={styles.label}>País</Text>
+          <Text style={styles.label}>Dirección</Text>
           <Controller
             control={control}
-            name="country"
+            name="address_1"
             render={({ field }) => (
               <TextInput
-                style={styles.input}
-                placeholder="País"
+                style={[styles.input, styles.textarea]}
+                placeholder="Dirección"
+                multiline
+                numberOfLines={4}
                 onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 value={field.value}
               />
             )}
           />
-          {errors.country && (
-            <Text style={styles.error}>{errors.country.message}</Text>
+          {errors.address_1 && (
+            <Text style={styles.error}>{errors.address_1.message}</Text>
           )}
 
           <Text style={styles.label}>Correo Electrónico</Text>
@@ -364,6 +411,12 @@ const styles = StyleSheet.create({
   },
   error: {
     color: "red",
+    marginBottom: 8,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 6,
     marginBottom: 8,
   },
 });

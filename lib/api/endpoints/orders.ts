@@ -12,6 +12,7 @@ import {
   OrderType,
   ProductGiftCardType,
 } from "@/types";
+import { CountryType } from "@/types/country";
 
 export const fecthCalculateShipping = async (
   order: OrderSchemaType,
@@ -277,3 +278,27 @@ export const fetchPutOrder = async (orderId: number, customerId: number) => {
     throw error;
   }
 };
+
+
+export const fetchCountries = async():Promise<CountryType[]> =>{
+  try {
+    const res = await fetch(
+      `${API_URL}/wp-json/wc/v3/data/countries`,
+      {
+        headers: {
+          Authorization: getWooAuthHeader(),
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const error: ApiErrorType = await res.json();
+      throw new Error(error.message || "Unknown error");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}
